@@ -1,0 +1,13 @@
+---
+title: "Midterm Project"
+author: "Yuki Joyama"
+date: "2024-03-19"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, message = F, warning = F)
+
+library(tidyverse)
+library(ggplot2)
+```
