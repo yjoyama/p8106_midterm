@@ -52,6 +52,14 @@ hist.data.frame(conti_recov)
 
 # Correlation
 ```{r}
+numeric_df_recov <- df_recov %>%
+  select_if(is.numeric)
+
+# Compute the correlation matrix
+correlation_matrix <- cor(numeric_df_recov)
+
+# Plot the correlation matrix
+corrplot(correlation_matrix, method = "circle", type = "upper", order = "hclust")
 
 ```
 
