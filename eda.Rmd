@@ -1,0 +1,33 @@
+---
+title: "EDA"
+author: "Yuki Joyama"
+date: "2024-03-20"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, message = F, warning = F)
+
+library(tidyverse)
+library(ggplot2)
+library(corrplot)
+
+# setup plot theme
+theme_set(
+  theme_bw() +
+    theme(legend.position = "top")
+  )
+```
+
+
+```{r dataprep}
+# read RData file
+df_recov <- get(load("./data/recovery.RData")) |> 
+  janitor::clean_names()
+
+# check the response variable
+# df_recov |> 
+#   ggplot(aes(x = recovery_time)) +
+#   geom_histogram(bins = 30, color = "black", fill = "gray")
+```
+
