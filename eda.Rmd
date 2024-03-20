@@ -31,3 +31,23 @@ df_recov <- get(load("./data/recovery.RData")) |>
 #   geom_histogram(bins = 30, color = "black", fill = "gray")
 ```
 
+# Histogram
+```{r}
+
+```
+
+# Bar plot
+```{r}
+
+```
+
+# Correlation
+```{r}
+
+```
+
+# Table 1
+```{r}
+
+```
+

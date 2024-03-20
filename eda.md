@@ -13,3 +13,11 @@ df_recov <- get(load("./data/recovery.RData")) |>
 #   ggplot(aes(x = recovery_time)) +
 #   geom_histogram(bins = 30, color = "black", fill = "gray")
 ```
+
+# Histogram
+
+# Bar plot
+
+# Correlation
+
+# Table 1
