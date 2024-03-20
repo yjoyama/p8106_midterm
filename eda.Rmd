@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = T, message = F, warning = F)
 library(tidyverse)
 library(ggplot2)
 library(corrplot)
+library(gtsummary)
+library(flextable)
 
 # setup plot theme
 theme_set(
@@ -25,10 +27,7 @@ theme_set(
 df_recov <- get(load("./data/recovery.RData")) |> 
   janitor::clean_names()
 
-# check the response variable
-# df_recov |> 
-#   ggplot(aes(x = recovery_time)) +
-#   geom_histogram(bins = 30, color = "black", fill = "gray")
+summary(df_recov)
 ```
 
 # Histogram
@@ -48,6 +47,71 @@ df_recov <- get(load("./data/recovery.RData")) |>
 
 # Table 1
 ```{r}
+theme_gtsummary_journal(journal = "nejm")
 
+table_1 = df_recov |> 
+  select(!id) |> 
+  mutate(
+    gender = case_when(
+      gender == 1 ~ "Male",
+      gender == 0 ~ "Female"
+    ),
+    race = case_when(
+      race == 1 ~ "White",
+      race == 2 ~ "Asian",
+      race == 3 ~ "Black",
+      race == 4 ~ "Hispanic"
+    ),
+    smoking = case_when(
+      smoking == 0 ~ "Never smoked",
+      smoking == 1 ~ "Former smoker",
+      smoking == 2 ~ "Current smoker"
+    ), 
+    hypertension = case_when(
+      hypertension == 0 ~ "No hypertension",
+      hypertension == 1 ~ "Hypertension"
+    ),
+    diabetes = case_when(
+      diabetes == 0 ~ "No diabetes",
+      diabetes == 1 ~ "Diabetes"
+    ),
+    vaccine = case_when(
+      vaccine == 0 ~ "Not vaccinated",
+      vaccine == 1 ~ "Vaccinated"
+    ),
+    severity = case_when(
+      severity == 0 ~ "Not severe",
+      severity == 1 ~ "Severe"
+    )
+  ) |> 
+  tbl_summary(
+    by = study,
+    statistic = list(
+      all_continuous() ~ "{mean} / {median} ({sd})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    digits = all_continuous() ~ 1,
+    label = list(
+      age ~ "Age",
+      gender ~ "Gender",
+      race ~ "Race",
+      smoking ~ "Smoking",
+      height ~ "Height",
+      weight ~ "Weight",
+      bmi ~ "BMI",
+      hypertension ~ "Hypertension",
+      diabetes ~ "Diabetes",
+      sbp ~ "SBP",
+      ldl ~ "LDL",
+      vaccine ~ "Vaccine",
+      severity ~ "Severity",
+      recovery_time ~ "Recovery time"
+    )
+  ) |> 
+  modify_caption("Baseline Characteristics") |> 
+  as_flex_table() |> 
+  line_spacing(space = 0, part = "body")
+
+table_1
 ```
 
