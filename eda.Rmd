@@ -64,19 +64,22 @@ cate_recov = df_recov |>
   select(gender, race, smoking, hypertension, diabetes, vaccine, severity, study)
 #ggplot(gather(cate_recov, cols, value), aes(x = value)) + 
 #       geom_bar(binwidth = 20) + facet_grid(.~cols)
-par(mfrow = c(2, 4),  # Layout: 2 rows, 2 columns
+
+# Setting up the plotting area
+par(mfrow = c(2, 4),  # Layout: 2 rows, 4 columns
     oma = c(2, 2, 3, 1),  # Outer margins
     mar = c(4, 4, 2, 1),  # Inner margins
     mgp = c(2, 1, 0))     # Margins for labels and title
 
-hist(cate_recov$gender, main = "Age", xlab = "Year", ylab = "Frequency")
-hist(cate_recov$race, main = "Height", xlab = "cm", ylab = "Frequency")
-hist(cate_recov$smoking, main = "Weight", xlab = "kl", ylab = "Frequency")
-hist(cate_recov$hypertension, main = "BMI", xlab = " ", ylab = "Frequency")
-hist(conti_recov$diabets, main = "SBP", xlab = "mm/Hg", ylab = "Frequency")
-hist(conti_recov$vaccine, main = "LDL", xlab = "mg/dL", ylab = "Frequency")
-hist(conti_recov$serverity, main = "Recovery Time", xlab = "Day", ylab = "Frequency")
-hist(conti_recov$study, main = "Recovery Time", xlab = "Day", ylab = "Frequency")
+barplot(table(cate_recov$gender), main = "Gender", ylab = "Count")
+barplot(table(cate_recov$race), main = "Race", ylab = "Count")
+barplot(table(cate_recov$smoking), main = "Smoking", ylab = "Count")
+barplot(table(cate_recov$hypertension), main = "Hypertension", ylab = "Count")
+barplot(table(cate_recov$diabetes), main = "Diabetes", ylab = "Count")
+barplot(table(cate_recov$vaccine), main = "Vaccine", ylab = "Count")
+barplot(table(cate_recov$severity), main = "Severity", ylab = "Count")
+barplot(table(cate_recov$study), main = "Study", ylab = "Count")
+
 
 ```
 
