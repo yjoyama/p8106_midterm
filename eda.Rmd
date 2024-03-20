@@ -85,8 +85,12 @@ barplot(table(cate_recov$study), main = "Study", ylab = "Count")
 
 # Correlation
 ```{r}
-numeric_df_recov <- df_recov %>%
+numeric_df_recov <- df_recov |>
+  mutate(race = as.numeric(race)) |>
+  mutate(smoking = as.numeric(smoking)) |>
+  mutate(study = as.numeric(as.factor(study))) |>
   select_if(is.numeric)
+
 
 # Compute the correlation matrix
 correlation_matrix <- cor(numeric_df_recov)
