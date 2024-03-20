@@ -6,11 +6,22 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = T, message = F, warning = F)
+knitr::opts_chunk$set(echo = T, message = F, warning = F, cache = T)
 
 library(tidyverse)
 library(ggplot2)
-library(corrplot)
+library(rsample) 
+library(caret)
+library(tidymodels)
+library(plotmo)
+library(earth)
+library(vip)
+
+# setup plot theme
+theme_set(
+  theme_bw() +
+    theme(legend.position = "top")
+  )
 ```
 
 ```{r dataprep}
@@ -19,31 +30,259 @@ df_recov <- get(load("./data/recovery.RData")) |>
   janitor::clean_names()
 
 head(df_recov)
+
+# partition (training:test=80:20)
+set.seed(2024)
+data_split = initial_split(df_recov, prop = .80)
+# training data
+df_train = training(data_split) |> 
+  select(!id)
+# test data
+df_test = testing(data_split) |> 
+  select(!id)
+
+# set up 10-fold CV
+ctrl1 <- trainControl(
+  method = "repeatedcv",
+  number = 10,
+  repeats = 5,
+  selectionFunction = "best"
+)
+
 ```
-
-# Exploratory analysis and data visualization
-```{r}
-# setup plot theme
-theme_set(
-  theme_bw() +
-    theme(legend.position = "top")
-  )
-
-# check the response variable
-df_recov |> 
-  ggplot(aes(x = recovery_time)) +
-  geom_histogram(bins = 30, color = "black", fill = "gray")
-
-# check correlations
-# set variable types
-```
-
 
 # Model training
-```{r}
 
+## Linear model
+```{r lm}
+set.seed(2024)
+
+lm.fit <- train(
+  recovery_time ~ .,
+  data = df_train,
+  method = "lm",
+  metric = "RMSE",
+  trControl = ctrl1
+)
+
+# check the model
+summary(lm.fit$finalModel)
+
+# obtain the test error
+lm.pred <- predict(lm.fit, newdata = df_test)
+mean((lm.pred - pull(df_test, "recovery_time"))^2) 
+```
+
+## Lasso
+```{r lasso}
+set.seed(2024)
+
+# find tuning parameter by CV
+lasso.fit <- 
+  train(
+    recovery_time ~ .,
+    data = df_train,
+    method = "glmnet",
+    tuneGrid = expand.grid(
+      alpha = 1,
+      lambda = exp(seq(2, 0, length = 100))
+    ),
+    trControl = ctrl1
+  )
+
+coef(lasso.fit$finalModel, s = lasso.fit$bestTune$lambda) 
+
+# plot RMSE and lambda
+plot(lasso.fit, xTrans = log)
+
+# print the best tuning parameter
+lasso.fit$bestTune
+
+# obtain the test error
+lasso.pred <- predict(lasso.fit, newdata = df_test)
+mean((lasso.pred - pull(df_test, "recovery_time"))^2) 
+```
+
+## Ridge
+```{r ridge}
+set.seed(2024)
+
+# find tuning parameter by CV
+ridge.fit <- 
+  train(
+    recovery_time ~ .,
+    data = df_train,
+    method = "glmnet",
+    tuneGrid = expand.grid(
+      alpha = 0,
+      lambda = exp(seq(2, 0, length = 100))
+    ),
+    trControl = ctrl1
+  )
+
+coef(ridge.fit$finalModel, s = ridge.fit$bestTune$lambda) 
+
+# plot RMSE and lambda
+plot(ridge.fit, xTrans = log)
+
+# print the best tuning parameter
+ridge.fit$bestTune
+
+# obtain the test error
+ridge.pred <- predict(ridge.fit, newdata = df_test)
+mean((ridge.pred - pull(df_test, "recovery_time"))^2) 
 ```
 
 
+## Elastic net
+```{r enet}
+set.seed(2024)
+
+# find tuning parameter by CV
+enet.fit <- 
+  train(
+    recovery_time ~ .,
+    data = df_train,
+    method = "glmnet",
+    tuneGrid = expand.grid(
+      alpha = seq(0, 1, length = 20),
+      lambda = exp(seq(2, 0, length = 100))
+    ),
+    trControl = ctrl1
+  )
+
+# check the best tuning parameter
+enet.fit$bestTune
+
+# plot RMSE, lambda and alpha
+myCol <- rainbow(25)
+myPar <- list(
+  superpose.symbol = list(col = myCol),
+  superpose.line = list(col = myCol)
+)
+
+plot(enet.fit, par.settings = myPar, xTrans = log)
+
+# coefficients in the final model
+coef(enet.fit$finalModel, s = enet.fit$bestTune$lambda)
+
+# obtain predicted values
+enet.pred <- predict(enet.fit, newdata = df_test)
+# test error
+mean((enet.pred - pull(df_test, "recovery_time"))^2)
+```
+
+## Principal Components Regression model (PCR)
+```{r pcr}
+# prepare x and y
+# training 
+x <- model.matrix(recovery_time ~ ., data = df_train)[, -1]
+y <- df_train$recovery_time
+
+# test
+x2 <- model.matrix(recovery_time ~ ., df_test)[, -1]
+y2 <- df_test$recovery_time
+
+set.seed(2024)
+
+pcr.fit <- train(
+  x, y,
+  method = "pcr",
+  tuneGrid = data.frame(ncomp = 1:18),
+  trControl = ctrl1,
+  preProcess = c("center", "scale")
+)
+
+summary(pcr.fit)
+
+# obtain predicted values 
+pred.pcr <- predict(
+  pcr.fit, 
+  newdata = x2
+)
+
+# visualize RMSE and the number of components
+ggplot(pcr.fit, highlight = T) 
+
+# test MSE
+mean((pred.pcr - y2)^2)
+```
+
+
+## Partial Least Squares model (PLS)
+```{r pls}
+set.seed(2024)
+
+pls.fit <- train(
+  x, y,
+  method = "pls",
+  tuneGrid = data.frame(ncomp = 1:18),
+  trControl = ctrl1,
+  preProcess = c("center", "scale")
+)
+
+summary(pls.fit)
+
+# obtain predicted values 
+pred.pls <- predict(
+  pls.fit, 
+  newdata = x2
+)
+
+# visualize RMSE and the number of components
+ggplot(pls.fit, highlight = T) 
+
+# test MSE
+mean((pred.pls - y2)^2)
+```
+
+## MARS
+```{r mars}
+set.seed(2024)
+
+# fit mars model
+mars.fit <- train(
+  x = df_train[1:14],
+  y = df_train$recovery_time,
+  method = "earth",
+  tuneGrid = expand.grid(degree = 1:5, nprune = 2:30),
+  metric = "RMSE",
+  trControl = ctrl1
+)
+
+summary(mars.fit$finalModel)
+
+# best tuning parameters
+mars.fit$bestTune
+
+# plot
+plot(mars.fit)
+
+# relative variable importance
+vip(mars.fit$finalModel, type = "nsubsets")
+
+# obtain the test error
+mars.pred <- predict(mars.fit, newdata = df_test)
+mean((mars.pred - pull(df_test, "recovery_time"))^2) 
+```
+
+## Model Comparison
+```{r}
+# resampling 
+resamp <- resamples(list(
+  lm = lm.fit,
+  lasso = lasso.fit,
+  ridge = ridge.fit,
+  elastic_net = enet.fit,
+  pcr = pcr.fit,
+  pls = pls.fit,
+  mars = mars.fit
+))
+
+summary(resamp)
+
+# visualize RMSEs 
+bwplot(resamp, metric = "RMSE")
+```
 
 
