@@ -38,15 +38,45 @@ cate_recov = df_recov |>
 conti_recov = df_recov |>
   select(age, height, weight, bmi, sbp, ldl, recovery_time)
 
-ggplot(gather(conti_recov, cols, value), aes(x = value)) + 
-       geom_histogram(binwidth = 20) + facet_grid(.~cols)
+#ggplot(gather(conti_recov, cols, value), aes(x = value)) + 
+#       geom_histogram(binwidth = 20) + facet_grid(.~cols)
 
-library(Hmisc)
-hist.data.frame(conti_recov)
+#library(Hmisc)
+#hist.data.frame(conti_recov)
+
+par(mfrow = c(2, 4),  # Layout: 2 rows, 2 columns
+    oma = c(2, 2, 3, 1),  # Outer margins
+    mar = c(4, 4, 2, 1),  # Inner margins
+    mgp = c(2, 1, 0))     # Margins for labels and title
+
+hist(conti_recov$age, main = "Age", xlab = "Year", ylab = "Frequency")
+hist(conti_recov$height, main = "Height", xlab = "cm", ylab = "Frequency")
+hist(conti_recov$weight, main = "Weight", xlab = "kl", ylab = "Frequency")
+hist(conti_recov$bmi, main = "BMI", xlab = " ", ylab = "Frequency")
+hist(conti_recov$sbp, main = "SBP", xlab = "mm/Hg", ylab = "Frequency")
+hist(conti_recov$ldl, main = "LDL", xlab = "mg/dL", ylab = "Frequency")
+hist(conti_recov$recovery_time, main = "Recovery Time", xlab = "Day", ylab = "Frequency")
 ```
 
 # Bar plot
 ```{r}
+cate_recov = df_recov |>
+  select(gender, race, smoking, hypertension, diabetes, vaccine, severity, study)
+#ggplot(gather(cate_recov, cols, value), aes(x = value)) + 
+#       geom_bar(binwidth = 20) + facet_grid(.~cols)
+par(mfrow = c(2, 4),  # Layout: 2 rows, 2 columns
+    oma = c(2, 2, 3, 1),  # Outer margins
+    mar = c(4, 4, 2, 1),  # Inner margins
+    mgp = c(2, 1, 0))     # Margins for labels and title
+
+hist(cate_recov$gender, main = "Age", xlab = "Year", ylab = "Frequency")
+hist(cate_recov$race, main = "Height", xlab = "cm", ylab = "Frequency")
+hist(cate_recov$smoking, main = "Weight", xlab = "kl", ylab = "Frequency")
+hist(cate_recov$hypertension, main = "BMI", xlab = " ", ylab = "Frequency")
+hist(conti_recov$diabets, main = "SBP", xlab = "mm/Hg", ylab = "Frequency")
+hist(conti_recov$vaccine, main = "LDL", xlab = "mg/dL", ylab = "Frequency")
+hist(conti_recov$serverity, main = "Recovery Time", xlab = "Day", ylab = "Frequency")
+hist(conti_recov$study, main = "Recovery Time", xlab = "Day", ylab = "Frequency")
 
 ```
 
