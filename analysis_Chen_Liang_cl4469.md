@@ -127,11 +127,12 @@ lm_test_rmse
 ``` r
 set.seed(2024)
 
+# Fit Model
 lasso_fit <- train(x, y,
                    data= training_df,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 1, 
-                                          lambda = exp(seq(8, -5, length = 100))),
+                                          lambda = exp(seq(5, -5, length = 100))),
                    trControl = ctrl1)
 ```
 
@@ -189,3 +190,76 @@ lasso_test_rmse
 ```
 
     ## [1] 461.3265
+
+## Elastic Net Model
+
+``` r
+set.seed(2024)
+
+# Fit Model
+enet_fit <- train(x, y,
+                  data = training_df,
+                  method = "glmnet",
+                  tuneGrid = expand.grid(alpha = seq(0, 1, length = 21), 
+                                         lambda = exp(seq(7, -3, length = 100))),
+                  trControl = ctrl1)
+```
+
+    ## Warning in nominalTrainWorkflow(x = x, y = y, wts = weights, info = trainInfo,
+    ## : There were missing values in resampled performance measures.
+
+``` r
+# Check best tune
+enet_fit$bestTune
+```
+
+    ##      alpha     lambda
+    ## 2001     1 0.04978707
+
+``` r
+# plot RMSE vs lambda and alpha
+myCol <- rainbow(25)
+myPar <- list(superpose.symbol = list(col = myCol),
+              superpose.line = list(col = myCol))
+
+plot(enet_fit, par.settings = myPar)
+```
+
+![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+``` r
+# Obtain coefficients in the final model
+coef(enet_fit$finalModel, enet_fit$bestTune$lambda)
+```
+
+    ## 18 x 1 sparse Matrix of class "dgCMatrix"
+    ##                         s1
+    ## (Intercept)  -1.655948e+03
+    ## age           2.072535e-01
+    ## gender       -2.702298e+00
+    ## race2         5.218413e-01
+    ## race3        -1.494128e+00
+    ## race4        -7.975307e-01
+    ## smoking1      1.766698e+00
+    ## smoking2      2.728978e+00
+    ## height        9.653888e+00
+    ## weight       -1.057481e+01
+    ## bmi           3.207384e+01
+    ## hypertension  2.221762e+00
+    ## diabetes     -1.557032e+00
+    ## sbp           4.974952e-02
+    ## ldl          -4.321739e-02
+    ## vaccine      -6.370383e+00
+    ## severity      7.827212e+00
+    ## studyB        4.901177e+00
+
+``` r
+# Make predictions on test data set
+enet_test_pred <- predict(enet_fit, newdata = x2)
+
+# Calculate test error
+enet__test_rmse <- mean((enet_test_pred - y2)^2)
+enet__test_rmse
+```
+
+    ## [1] 464.4851
