@@ -141,6 +141,37 @@ ridge_test_mse <- mean((ridge_test_pred - y2)^2)
 ridge_test_mse
 ```
 
+## Principal Component Regression (PCR)
+```{r}
+set.seed(2024)
+
+# Fit Model
+pcr_fit <-  train(x, y,
+                  method = "pcr",
+                  tuneGrid = data.frame(ncomp = 1:18),
+                  trControl = ctrl1,
+                  preProcess = c("center", "scale"))
+
+# Plot cv RMSE-components
+ggplot(pcr_fit, highlight = TRUE) + theme_bw()
+
+# Check best tune
+pcr_fit$bestTune
+
+# Make prediction on test data
+pcr_test_pred <- predict(pcr_fit, newdata = x2)
+pcr_test_mse <- mean((pcr_test_pred - y2)^2)
+pcr_test_mse
+```
+
+## Partial Least Squares model (PLS)
+```{r}
+
+
+
+```
+
+
 
 
 

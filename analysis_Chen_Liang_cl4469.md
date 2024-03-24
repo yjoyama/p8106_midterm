@@ -317,3 +317,40 @@ ridge_test_mse
 ```
 
     ## [1] 510.6402
+
+## Principal Component Regression (PCR)
+
+``` r
+set.seed(2024)
+
+# Fit Model
+pcr_fit <-  train(x, y,
+                  method = "pcr",
+                  tuneGrid = data.frame(ncomp = 1:18),
+                  trControl = ctrl1,
+                  preProcess = c("center", "scale"))
+
+# Plot cv RMSE-components
+ggplot(pcr_fit, highlight = TRUE) + theme_bw()
+```
+
+![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+# Check best tune
+pcr_fit$bestTune
+```
+
+    ##    ncomp
+    ## 17    17
+
+``` r
+# Make prediction on test data
+pcr_test_pred <- predict(pcr_fit, newdata = x2)
+pcr_test_mse <- mean((pcr_test_pred - y2)^2)
+pcr_test_mse
+```
+
+    ## [1] 461.2106
+
+## Partial Least Squares model (PLS)
