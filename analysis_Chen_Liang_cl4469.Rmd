@@ -127,6 +127,7 @@ ridge_fit <- train(x, y,
                                           lambda = exp(seq(8, -1, length=100))),
                    trControl = ctrl1)
 
+# plot RMSE
 plot(ridge_fit, xTrans = log)
 
 # Check best tune
@@ -152,11 +153,14 @@ pcr_fit <-  train(x, y,
                   trControl = ctrl1,
                   preProcess = c("center", "scale"))
 
-# Plot cv RMSE-components
+# plot RMSE
 ggplot(pcr_fit, highlight = TRUE) + theme_bw()
 
 # Check best tune
 pcr_fit$bestTune
+
+# Obtain coefficients in the final model
+coef(pcr_fit$finalModel, s = pcr_fit$bestTune)
 
 # Make prediction on test data
 pcr_test_pred <- predict(pcr_fit, newdata = x2)
@@ -166,9 +170,31 @@ pcr_test_mse
 
 ## Partial Least Squares model (PLS)
 ```{r}
+set.seed(2024)
 
+# Fit Model
+pls_fit <- train(x, y,
+                 method = "pls",
+                 tuneGrid = data.frame(ncomp = 1:17),
+                 trControl = ctrl1,
+                 preProcess = c("center", "scale"))
 
+# Plot RMSE
+ggplot(pls_fit, highlight = TRUE)
 
+# Check best tune
+pls_fit$bestTune
+
+# view the model summary
+summary(pls_fit)
+
+# Obtain coefficients in the final model
+coef(pls_fit$finalModel, s = pls_fit$bestTune)
+
+# view performance on the test set (RMSE)
+pls_test_pred <- predict(pls_fit, newdata = x2) 
+pls_test_mse <- mean((pls_test_pred - y2)^2)
+pls_test_mse
 ```
 
 

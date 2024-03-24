@@ -270,6 +270,7 @@ ridge_fit <- train(x, y,
                                           lambda = exp(seq(8, -1, length=100))),
                    trControl = ctrl1)
 
+# plot RMSE
 plot(ridge_fit, xTrans = log)
 ```
 
@@ -330,7 +331,7 @@ pcr_fit <-  train(x, y,
                   trControl = ctrl1,
                   preProcess = c("center", "scale"))
 
-# Plot cv RMSE-components
+# plot RMSE
 ggplot(pcr_fit, highlight = TRUE) + theme_bw()
 ```
 
@@ -345,6 +346,32 @@ pcr_fit$bestTune
     ## 17    17
 
 ``` r
+# Obtain coefficients in the final model
+coef(pcr_fit$finalModel, s = pcr_fit$bestTune)
+```
+
+    ## , , 17 comps
+    ## 
+    ##                 .outcome
+    ## age            0.9423394
+    ## gender        -1.4703745
+    ## race2          0.1394040
+    ## race3         -0.6684241
+    ## race4         -0.2582503
+    ## smoking1       0.8932190
+    ## smoking2       0.9120685
+    ## height        75.5422689
+    ## weight       -98.5058071
+    ## bmi          115.9812842
+    ## hypertension   1.1603216
+    ## diabetes      -0.5865935
+    ## sbp            0.3979801
+    ## ldl           -0.9186050
+    ## vaccine       -3.1478891
+    ## severity       2.4728924
+    ## studyB         2.3055598
+
+``` r
 # Make prediction on test data
 pcr_test_pred <- predict(pcr_fit, newdata = x2)
 pcr_test_mse <- mean((pcr_test_pred - y2)^2)
@@ -354,3 +381,79 @@ pcr_test_mse
     ## [1] 461.2106
 
 ## Partial Least Squares model (PLS)
+
+``` r
+set.seed(2024)
+
+# Fit Model
+pls_fit <- train(x, y,
+                 method = "pls",
+                 tuneGrid = data.frame(ncomp = 1:17),
+                 trControl = ctrl1,
+                 preProcess = c("center", "scale"))
+
+# Plot RMSE
+ggplot(pls_fit, highlight = TRUE)
+```
+
+![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
+# Check best tune
+pls_fit$bestTune
+```
+
+    ##    ncomp
+    ## 10    10
+
+``` r
+# view the model summary
+summary(pls_fit)
+```
+
+    ## Data:    X dimension: 2402 17 
+    ##  Y dimension: 2402 1
+    ## Fit method: oscorespls
+    ## Number of components considered: 10
+    ## TRAINING: % variance explained
+    ##           1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps
+    ## X           9.916    17.85    28.74    35.20    39.46    41.56    44.49
+    ## .outcome   12.556    13.53    13.62    13.82    15.80    21.28    24.30
+    ##           8 comps  9 comps  10 comps
+    ## X           47.83    53.67     59.46
+    ## .outcome    25.87    25.96     25.97
+
+``` r
+# Obtain coefficients in the final model
+coef(pls_fit$finalModel, s = pls_fit$bestTune)
+```
+
+    ## , , 10 comps
+    ## 
+    ##                 .outcome
+    ## age            0.9395515
+    ## gender        -1.4652037
+    ## race2          0.1333538
+    ## race3         -0.6746239
+    ## race4         -0.2570572
+    ## smoking1       0.8926571
+    ## smoking2       0.9121369
+    ## height        75.5403795
+    ## weight       -98.5066328
+    ## bmi          115.9809974
+    ## hypertension   1.1597094
+    ## diabetes      -0.5799247
+    ## sbp            0.3966856
+    ## ldl           -0.9113583
+    ## vaccine       -3.1481168
+    ## severity       2.4789959
+    ## studyB         2.3055630
+
+``` r
+# view performance on the test set (RMSE)
+pls_test_pred <- predict(pls_fit, newdata = x2) 
+pls_test_mse <- mean((pls_test_pred - y2)^2)
+pls_test_mse
+```
+
+    ## [1] 461.2433
