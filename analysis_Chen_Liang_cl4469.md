@@ -123,3 +123,69 @@ lm_test_rmse
     ## [1] 21.47581
 
 ## Lasso Model
+
+``` r
+set.seed(2024)
+
+lasso_fit <- train(x, y,
+                   data= training_df,
+                   method = "glmnet",
+                   tuneGrid = expand.grid(alpha = 1, 
+                                          lambda = exp(seq(8, -5, length = 100))),
+                   trControl = ctrl1)
+```
+
+    ## Warning in nominalTrainWorkflow(x = x, y = y, wts = weights, info = trainInfo,
+    ## : There were missing values in resampled performance measures.
+
+``` r
+# Plot RMSE and lambda
+plot(lasso_fit, xTrans = log)
+```
+
+![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
+# Check best tune
+lasso_fit$bestTune
+```
+
+    ##   alpha      lambda
+    ## 1     1 0.006737947
+
+``` r
+# Obtain coefficients in the final model
+coef(lasso_fit$finalModel, s = lasso_fit$bestTune$lambda)
+```
+
+    ## 18 x 1 sparse Matrix of class "dgCMatrix"
+    ##                         s1
+    ## (Intercept)  -2.086847e+03
+    ## age           2.111038e-01
+    ## gender       -2.903129e+00
+    ## race2         6.153220e-01
+    ## race3        -1.643971e+00
+    ## race4        -8.951082e-01
+    ## smoking1      1.948664e+00
+    ## smoking2      2.927867e+00
+    ## height        1.219404e+01
+    ## weight       -1.325814e+01
+    ## bmi           3.978334e+01
+    ## hypertension  2.304820e+00
+    ## diabetes     -1.624339e+00
+    ## sbp           4.977789e-02
+    ## ldl          -4.650331e-02
+    ## vaccine      -6.395969e+00
+    ## severity      7.907612e+00
+    ## studyB        4.905282e+00
+
+``` r
+# Make predictions on test dataset
+lasso_test_pred <- predict(lasso_fit, newdata = x2)
+
+# Obtain test error 
+lasso_test_rmse <- mean((lasso_test_pred - y2)^2)
+lasso_test_rmse
+```
+
+    ## [1] 461.3265
