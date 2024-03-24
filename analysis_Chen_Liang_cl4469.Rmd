@@ -7,5 +7,63 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(caret)
+library(mgcv)
+library(earth)
 ```
+
+## Data preparation
+```{r}
+# Load data
+recov_df <- get(load("./data/recovery.RData")) |> 
+  janitor::clean_names() |>
+  na.omit() |>
+  select(-id)
+
+summary(recov_df)
+# Create a partition index.(training:test=80:20)
+set.seed(2024)
+train_index = createDataPartition(y = recov_df$recovery_time,
+                                 p = 0.8,
+                                 list = FALSE)
+# Extract the training and test data
+training_df = recov_df[train_index, ]
+testing_df = recov_df[-train_index, ]
+
+# Training data
+x = model.matrix(recovery_time~.,training_df)[, -1]
+y = training_df$recovery_time
+
+# Testing data
+x2 <- model.matrix(recovery_time~.,testing_df)[, -1]
+y2 <- testing_df$recovery_time
+
+```
+
+## Linear Model
+```{r}
+set.seed(2024)
+
+# 10-fold cv
+ctrl1 <- trainControl(method = "cv", number = 10)
+
+# Fit Model
+lm_fit <- train(x, y, method = "lm", trControl = ctrl1)
+summary(lm_fit)
+
+# Make predictions on test dataset
+lm_test_pred <- predict(lm_fit, newdata = x2) # test dataset
+
+# Calculate test error
+lm_test_rmse <- sqrt(mean((lm_test_pred - y2)^2))
+lm_test_rmse
+```
+
+## Lasso Model
+```{r}
+
+
+```
+
 
