@@ -112,10 +112,8 @@ summary(lm_fit)
     ## F-statistic: 49.19 on 17 and 2384 DF,  p-value: < 2.2e-16
 
 ``` r
-# Make predictions on test dataset
-lm_test_pred <- predict(lm_fit, newdata = x2) # test dataset
-
 # Calculate test error
+lm_test_pred <- predict(lm_fit, newdata = x2) # test dataset
 lm_test_rmse <- sqrt(mean((lm_test_pred - y2)^2))
 lm_test_rmse
 ```
@@ -181,10 +179,8 @@ coef(lasso_fit$finalModel, s = lasso_fit$bestTune$lambda)
     ## studyB        4.905282e+00
 
 ``` r
-# Make predictions on test dataset
+# Calculate test error
 lasso_test_pred <- predict(lasso_fit, newdata = x2)
-
-# Obtain test error 
 lasso_test_rmse <- mean((lasso_test_pred - y2)^2)
 lasso_test_rmse
 ```
@@ -254,12 +250,70 @@ coef(enet_fit$finalModel, enet_fit$bestTune$lambda)
     ## studyB        4.901177e+00
 
 ``` r
-# Make predictions on test data set
-enet_test_pred <- predict(enet_fit, newdata = x2)
-
 # Calculate test error
-enet__test_rmse <- mean((enet_test_pred - y2)^2)
-enet__test_rmse
+enet_test_pred <- predict(enet_fit, newdata = x2)
+enet_test_rmse <- mean((enet_test_pred - y2)^2)
+enet_test_rmse
 ```
 
     ## [1] 464.4851
+
+## Ridge
+
+``` r
+set.seed(2024)
+
+# Fit Model
+ridge_fit <- train(x, y,
+                   method = "glmnet", 
+                   tuneGrid = expand.grid(alpha = 0,
+                                          lambda = exp(seq(8, -1, length=100))),
+                   trControl = ctrl1)
+
+plot(ridge_fit, xTrans = log)
+```
+
+![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+``` r
+# Check best tune
+ridge_fit$bestTune
+```
+
+    ##   alpha    lambda
+    ## 5     0 0.5292133
+
+``` r
+# Obtain coefficients in the final model
+coef(ridge_fit$finalModel, s = ridge_fit$bestTune$lambda)
+```
+
+    ## 18 x 1 sparse Matrix of class "dgCMatrix"
+    ##                         s1
+    ## (Intercept)  -105.25903484
+    ## age             0.22871415
+    ## gender         -2.34223209
+    ## race2           0.96528746
+    ## race3          -1.51786231
+    ## race4          -1.28760472
+    ## smoking1        1.61478155
+    ## smoking2        2.77224341
+    ## height          0.50242173
+    ## weight         -0.88976285
+    ## bmi             4.21861393
+    ## hypertension    2.06444017
+    ## diabetes       -1.83506658
+    ## sbp             0.06627462
+    ## ldl            -0.04634671
+    ## vaccine        -6.54140053
+    ## severity        7.92539955
+    ## studyB          5.18688722
+
+``` r
+# Calculate test error
+ridge_test_pred <- predict(ridge_fit, newdata = x2)
+ridge_test_mse <- mean((ridge_test_pred - y2)^2)
+ridge_test_mse
+```
+
+    ## [1] 510.6402
