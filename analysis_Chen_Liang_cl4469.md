@@ -372,7 +372,7 @@ coef(pcr_fit$finalModel, s = pcr_fit$bestTune)
     ## studyB         2.3055598
 
 ``` r
-# Make prediction on test data
+# Calculate test error
 pcr_test_pred <- predict(pcr_fit, newdata = x2)
 pcr_test_mse <- mean((pcr_test_pred - y2)^2)
 pcr_test_mse
@@ -407,23 +407,6 @@ pls_fit$bestTune
     ## 10    10
 
 ``` r
-# view the model summary
-summary(pls_fit)
-```
-
-    ## Data:    X dimension: 2402 17 
-    ##  Y dimension: 2402 1
-    ## Fit method: oscorespls
-    ## Number of components considered: 10
-    ## TRAINING: % variance explained
-    ##           1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps
-    ## X           9.916    17.85    28.74    35.20    39.46    41.56    44.49
-    ## .outcome   12.556    13.53    13.62    13.82    15.80    21.28    24.30
-    ##           8 comps  9 comps  10 comps
-    ## X           47.83    53.67     59.46
-    ## .outcome    25.87    25.96     25.97
-
-``` r
 # Obtain coefficients in the final model
 coef(pls_fit$finalModel, s = pls_fit$bestTune)
 ```
@@ -450,10 +433,103 @@ coef(pls_fit$finalModel, s = pls_fit$bestTune)
     ## studyB         2.3055630
 
 ``` r
-# view performance on the test set (RMSE)
+# Calculate test error
 pls_test_pred <- predict(pls_fit, newdata = x2) 
 pls_test_mse <- mean((pls_test_pred - y2)^2)
 pls_test_mse
 ```
 
     ## [1] 461.2433
+
+## GAM
+
+``` r
+set.seed(2024)
+
+# Fit Model
+gam_fit = train(x, y,
+                method = "gam",   
+                tuneGrid = data.frame(method = "GCV.Cp",
+                                      select = c(TRUE, FALSE)),
+                trControl = ctrl1)
+
+# Parameters that fit the best model
+gam_fit$bestTune
+```
+
+    ##   select method
+    ## 1  FALSE GCV.Cp
+
+``` r
+gam_fit$finalModel
+```
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## .outcome ~ gender + race2 + race3 + race4 + smoking1 + smoking2 + 
+    ##     hypertension + diabetes + vaccine + severity + studyB + s(age) + 
+    ##     s(sbp) + s(ldl) + s(bmi) + s(height) + s(weight)
+    ## 
+    ## Estimated degrees of freedom:
+    ## 1.00 1.00 1.00 7.46 7.95 1.00  total = 31.4 
+    ## 
+    ## GCV score: 349.178
+
+``` r
+# View the model summary
+summary(gam_fit$finalModel)
+```
+
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## .outcome ~ gender + race2 + race3 + race4 + smoking1 + smoking2 + 
+    ##     hypertension + diabetes + vaccine + severity + studyB + s(age) + 
+    ##     s(sbp) + s(ldl) + s(bmi) + s(height) + s(weight)
+    ## 
+    ## Parametric coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   43.5506     1.0681  40.776  < 2e-16 ***
+    ## gender        -3.2725     0.7625  -4.292 1.84e-05 ***
+    ## race2          0.5097     1.7285   0.295   0.7681    
+    ## race3         -1.5887     0.9728  -1.633   0.1026    
+    ## race4         -0.9136     1.3585  -0.673   0.5013    
+    ## smoking1       2.0986     0.8663   2.423   0.0155 *  
+    ## smoking2       3.5623     1.2648   2.816   0.0049 ** 
+    ## hypertension   2.3060     1.2578   1.833   0.0669 .  
+    ## diabetes      -1.6315     1.0585  -1.541   0.1234    
+    ## vaccine       -6.3523     0.7759  -8.187 4.31e-16 ***
+    ## severity       7.9027     1.2215   6.469 1.19e-10 ***
+    ## studyB         4.6159     0.8086   5.709 1.28e-08 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Approximate significance of smooth terms:
+    ##             edf Ref.df      F  p-value    
+    ## s(age)    1.000  1.000  1.570 0.210380    
+    ## s(sbp)    1.000  1.000  0.166 0.683927    
+    ## s(ldl)    1.000  1.000  3.666 0.055657 .  
+    ## s(bmi)    7.457  8.358 65.449  < 2e-16 ***
+    ## s(height) 7.947  8.685 12.294  < 2e-16 ***
+    ## s(weight) 1.000  1.000 14.381 0.000153 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## R-sq.(adj) =  0.344   Deviance explained = 35.2%
+    ## GCV = 349.18  Scale est. = 344.61    n = 2402
+
+``` r
+# Calculate test error
+gam_test_pred <- predict(gam_fit, newdata = x2)
+gam_test_mse <- mean((gam_test_pred - y2)^2)
+gam_test_mse
+```
+
+    ## [1] 409.4947
+
+## Multivariate Adaptive Regression Splines (MARS)

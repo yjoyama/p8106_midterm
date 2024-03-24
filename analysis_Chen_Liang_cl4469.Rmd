@@ -162,7 +162,7 @@ pcr_fit$bestTune
 # Obtain coefficients in the final model
 coef(pcr_fit$finalModel, s = pcr_fit$bestTune)
 
-# Make prediction on test data
+# Calculate test error
 pcr_test_pred <- predict(pcr_fit, newdata = x2)
 pcr_test_mse <- mean((pcr_test_pred - y2)^2)
 pcr_test_mse
@@ -185,19 +185,46 @@ ggplot(pls_fit, highlight = TRUE)
 # Check best tune
 pls_fit$bestTune
 
-# view the model summary
-summary(pls_fit)
-
 # Obtain coefficients in the final model
 coef(pls_fit$finalModel, s = pls_fit$bestTune)
 
-# view performance on the test set (RMSE)
+# Calculate test error
 pls_test_pred <- predict(pls_fit, newdata = x2) 
 pls_test_mse <- mean((pls_test_pred - y2)^2)
 pls_test_mse
 ```
 
+## GAM
+```{r}
+set.seed(2024)
 
+# Fit Model
+gam_fit = train(x, y,
+                method = "gam",   
+                tuneGrid = data.frame(method = "GCV.Cp",
+                                      select = c(TRUE, FALSE)),
+                trControl = ctrl1)
+
+# Parameters that fit the best model
+gam_fit$bestTune
+gam_fit$finalModel
+
+# View the model summary
+summary(gam_fit$finalModel)
+
+# Calculate test error
+gam_test_pred <- predict(gam_fit, newdata = x2)
+gam_test_mse <- mean((gam_test_pred - y2)^2)
+gam_test_mse
+```
+
+## Multivariate Adaptive Regression Splines (MARS)
+```{r}
+
+
+
+
+```
 
 
 
