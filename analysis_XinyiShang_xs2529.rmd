@@ -6,10 +6,264 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = T, message = F, warning = F)
+
+library(tidyverse)
+library(ggplot2)
+library(corrplot)
+library(gtsummary)
+library(flextable)
+library(rsample) 
+library(caret)
+library(tidymodels)
+library(plotmo)
+library(earth)
+library(vip)
+
+# setup plot theme
+theme_set(
+  theme_bw() +
+    theme(legend.position = "top")
+  )
 ```
 
 ```{r}
-load('data/recovery.RData')
+# read RData file
+df_recov <- get(load("./data/recovery.RData")) |> 
+  janitor::clean_names()
+
+summary(df_recov)
 ```
+
+
+```{r}
+set.seed(2024)
+
+data_split = initial_split(df_recov, prop = .80)
+train = training(data_split) |>
+  select( -id)
+test = testing(data_split) |>
+  select( -id)
+
+# Training data
+x = model.matrix(recovery_time~.,train)[, -1]
+y = train$recovery_time
+
+# Testing data
+x2 <- model.matrix(recovery_time~.,test)[, -1]
+y2 <- test$recovery_time
+
+ctrl1 <- trainControl(method = "cv", number = 10, search = "random", allowParallel = TRUE)
+
+```
+
+```{r}
+#calculate rmse
+calculate_rmse <- function(model, x2, y2) {
+  test_pred <- predict(model, newdata = x2)
+  test_rmse <- sqrt(mean((test_pred - y2) ^ 2))
+  
+  return(test_rmse)
+}
+```
+
+
+**Linear Model**
+```{r}
+set.seed(2024)
+
+lm <- train(x, y, method = "lm", trControl = ctrl1)
+
+summary(lm)
+
+plot(lm$finalModel)
+
+rmse_value <- calculate_rmse(lm, x2, y2)
+print(rmse_value)
+```
+
+**LASSO**
+
+```{r}
+# Set seed for reproducibility
+set.seed(2024)
+
+# Train LASSO Model
+lasso <- train(x,y,
+               data = train,
+               method = "glmnet",
+               tuneGrid = expand.grid(alpha = 1, lambda = exp(seq(10, -10, length = 100))),
+               trControl = ctrl1)
+
+# Extract Coefficients at best lambda
+coef(lasso$finalModel, s = lasso$bestTune$lambda)
+
+# View best tuning parameters
+lasso$bestTune
+
+# Plot model
+plot(lasso, xTrans = log)
+
+# Calculate and print RMSE
+rmse_value <- calculate_rmse(lasso, x2, y2)
+print(rmse_value)
+
+```
+
+**Ridge**
+
+```{r}
+# Set seed for reproducibility
+set.seed(2024)
+
+# Train ridge Model
+ridge <- train(x,y,
+               data = train,
+               method = "glmnet",
+               tuneGrid = expand.grid(alpha = 0, lambda = exp(seq(10, -10, length = 100))),
+               trControl = ctrl1)
+
+# Extract Coefficients at best lambda
+coef(ridge$finalModel, s = ridge$bestTune$lambda)
+
+# View best tuning parameters
+ridge$bestTune
+
+# Plot model
+plot(ridge, xTrans = log)
+
+# Calculate and print RMSE
+rmse_value <- calculate_rmse(ridge, x2, y2)
+print(rmse_value)
+```
+**Elastic Net**
+```{r}
+# Set seed for reproducibility
+set.seed(2024)
+
+# Train ridge Model
+elastic <- train(x,y,
+               data = train,
+               method = "glmnet",
+               tuneGrid = expand.grid(alpha = seq(0, 1, length = 11), lambda = exp(seq(10, -10, length = 100))),
+               trControl = ctrl1)
+
+# Extract Coefficients at best lambda
+coef(elastic$finalModel, s = elastic$bestTune$lambda)
+
+# View best tuning parameters
+elastic$bestTune
+
+# Plot model
+plot(elastic, xTrans = log)
+
+# Calculate and print RMSE
+rmse_value <- calculate_rmse(elastic, x2, y2)
+print(rmse_value)
+```
+**PCR**
+```{r}
+
+set.seed(2024)
+pcr <- train(
+  x, y,
+  method = "pcr",
+  tuneGrid = data.frame(ncomp = 1:17),
+  trControl = ctrl1,
+  preProcess = c("center", "scale")
+)
+
+summary(pcr)
+
+ggplot(pcr) 
+
+# Calculate and print RMSE
+rmse_value <- calculate_rmse(pcr, x2, y2)
+print(rmse_value)
+```
+
+**PLS**
+```{r}
+set.seed(2024)
+
+pls <- train(
+  x, y,
+  method = "pls",
+  tuneGrid = data.frame(ncomp = 1:17),
+  trControl = ctrl1,
+  preProcess = c("center", "scale")
+)
+
+summary(pls)
+
+ggplot(pls) 
+
+# Calculate and print RMSE
+rmse_value <- calculate_rmse(pls, x2, y2)
+print(rmse_value)
+```
+
+**MARS**
+```{r mars}
+set.seed(2024)
+
+mars <- train(
+  x, y,
+  method = "earth",
+  tuneGrid = expand.grid(degree = 1:3, nprune = seq(2, 20, by = 2)),
+  metric = "RMSE",
+  trControl = ctrl1
+)
+
+summary(mars$finalModel)
+
+mars$bestTune
+
+plot(mars)
+
+vip(mars$finalModel, type = "nsubsets")
+
+rmse_value <- calculate_rmse(mars, x2, y2)
+print(rmse_value)
+```
+
+
+**GAM**
+```{r}
+set.seed(2024)
+gam = train(x, y,
+            method = "gam",   
+            tuneGrid = data.frame(method = "GCV.Cp",
+                                  select = c(TRUE, FALSE)),
+            trControl = ctrl1)
+
+summary(gam$finalModel)
+
+
+gam$bestTune
+
+plot(gam)
+
+rmse_value <- calculate_rmse(gam, x2, y2)
+print(rmse_value)
+```
+
+## Model Comparison
+```{r}
+resamp <- resamples(list(
+  lm = lm,
+  lasso = lasso,
+  ridge = ridge,
+  elastic_net = elastic,
+  pcr = pcr,
+  pls = pls,
+  mars = mars,
+  gam = gam
+))
+
+summary(resamp)
+
+bwplot(resamp, metric = "RMSE")
+```
+
 
