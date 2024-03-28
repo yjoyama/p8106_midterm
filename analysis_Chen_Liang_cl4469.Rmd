@@ -220,11 +220,45 @@ gam_test_mse
 
 ## Multivariate Adaptive Regression Splines (MARS)
 ```{r}
+set.seed(2024)
 
+mars_grid <- expand.grid(degree = 1:3,
+                         nprune = 2:26)
 
+mars_fit <- train(x, y,
+                  method = "earth",
+                  tuneGrid = mars_grid,
+                  trControl = ctrl1)
 
+# Plot RMSE
+ggplot(mars_fit, highlight = T)
+
+# Parameters that fit the best model
+mars_fit$bestTune
+
+coef(mars_fit$finalModel)
 
 ```
 
+## Model Comparing
+
+```{r}
+# resample
+resamp <- resamples(list(
+  lm = lm_fit,
+  lasso = lasso_fit,
+  ridge = ridge_fit,
+  elastic_net = enet_fit,
+  pcr = pcr_fit,
+  pls = pls_fit,
+  gam = gam_fit,
+  mars = mars_fit
+))
+
+summary(resamp)
+
+# visualization
+bwplot(resamp, metric = "RMSE")
+```
 
 
