@@ -533,3 +533,116 @@ gam_test_mse
     ## [1] 409.4947
 
 ## Multivariate Adaptive Regression Splines (MARS)
+
+``` r
+set.seed(2024)
+
+mars_grid <- expand.grid(degree = 1:3,
+                         nprune = 2:26)
+
+mars_fit <- train(x, y,
+                  method = "earth",
+                  tuneGrid = mars_grid,
+                  trControl = ctrl1)
+
+# Plot RMSE
+ggplot(mars_fit, highlight = T)
+```
+
+![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+# Parameters that fit the best model
+mars_fit$bestTune
+```
+
+    ##    nprune degree
+    ## 42     18      2
+
+``` r
+coef(mars_fit$finalModel)
+```
+
+    ##                   (Intercept)                   h(bmi-30.8) 
+    ##                 -134.95923527                  -24.91874630 
+    ##                   h(30.8-bmi)          h(bmi-30.8) * studyB 
+    ##                   19.93223441                   17.01245024 
+    ## h(height-159.5) * h(bmi-30.8) h(159.5-height) * h(bmi-30.8) 
+    ##                   -0.55722369                    2.28977653 
+    ##                   h(bmi-25.3)                       vaccine 
+    ##                    4.56922378                   -4.55632324 
+    ##      h(bmi-30.8) * h(ldl-104)      h(bmi-30.8) * h(104-ldl) 
+    ##                    0.14027416                    0.34957628 
+    ##  h(85.5-weight) * h(bmi-30.8)                        gender 
+    ##                   -2.59956833                   -3.11745328 
+    ##      h(158-height) * severity             severity * studyB 
+    ##                   10.68088528                   15.46411845 
+    ##      h(bmi-25.3) * h(139-sbp)              vaccine * studyB 
+    ##                   -0.06087514                   -4.12553822 
+    ##                   h(bmi-21.3)                   h(bmi-29.5) 
+    ##                   16.50474700                    5.80857644
+
+## Model Comparing
+
+``` r
+# resample
+resamp <- resamples(list(
+  lm = lm_fit,
+  lasso = lasso_fit,
+  ridge = ridge_fit,
+  elastic_net = enet_fit,
+  pcr = pcr_fit,
+  pls = pls_fit,
+  gam = gam_fit,
+  mars = mars_fit
+))
+
+summary(resamp)
+```
+
+    ## 
+    ## Call:
+    ## summary.resamples(object = resamp)
+    ## 
+    ## Models: lm, lasso, ridge, elastic_net, pcr, pls, gam, mars 
+    ## Number of resamples: 10 
+    ## 
+    ## MAE 
+    ##                 Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
+    ## lm          12.65827 12.98201 13.14044 13.24961 13.40682 14.08860    0
+    ## lasso       12.58753 12.93753 13.07802 13.19703 13.36130 14.03338    0
+    ## ridge       12.43772 12.91646 13.44438 13.28629 13.64266 13.86450    0
+    ## elastic_net 12.39675 12.73068 12.87723 13.01278 13.19290 13.82902    0
+    ## pcr         12.65827 12.98201 13.14044 13.24961 13.40682 14.08860    0
+    ## pls         12.65860 12.98145 13.13910 13.24949 13.40785 14.08853    0
+    ## gam         12.02371 12.11518 12.64794 12.67120 13.11409 13.61163    0
+    ## mars        11.03567 11.44323 12.43141 12.11802 12.65317 12.97444    0
+    ## 
+    ## RMSE 
+    ##                 Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
+    ## lm          17.41034 18.19047 19.31259 19.80930 20.28848 25.11340    0
+    ## lasso       17.33271 18.18750 19.28360 19.80825 20.34108 25.18673    0
+    ## ridge       17.10442 19.51358 19.91044 21.06982 22.74103 27.51605    0
+    ## elastic_net 17.05512 18.26359 19.21957 19.87933 20.66824 25.58520    0
+    ## pcr         17.41034 18.19047 19.31259 19.80930 20.28848 25.11340    0
+    ## pls         17.41074 18.18978 19.31360 19.80881 20.28669 25.11381    0
+    ## gam         16.90154 18.19722 18.38978 19.28520 20.10106 22.89854    0
+    ## mars        15.50036 15.93019 18.50061 18.00871 19.26472 21.62617    0
+    ## 
+    ## Rsquared 
+    ##                   Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+    ## lm          0.12788184 0.1698379 0.2354838 0.2410852 0.3227967 0.3823306    0
+    ## lasso       0.12780359 0.1702795 0.2337423 0.2407865 0.3225846 0.3814517    0
+    ## ridge       0.06822310 0.0994765 0.1278933 0.1421557 0.1819024 0.2515319    0
+    ## elastic_net 0.12562264 0.1682808 0.2220135 0.2360842 0.3168461 0.3723871    0
+    ## pcr         0.12788184 0.1698379 0.2354838 0.2410852 0.3227967 0.3823306    0
+    ## pls         0.12788804 0.1698055 0.2355930 0.2411219 0.3228657 0.3824693    0
+    ## gam         0.08785856 0.1920850 0.2634086 0.2999918 0.4191649 0.5086967    0
+    ## mars        0.10359889 0.2527592 0.3128814 0.3728295 0.5470816 0.6313411    0
+
+``` r
+# visualization
+bwplot(resamp, metric = "RMSE")
+```
+
+![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
