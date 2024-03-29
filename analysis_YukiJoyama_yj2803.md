@@ -20,6 +20,9 @@ Yuki Joyama
 
 # Model training
 
+For the model training, I am going to implement 10-fold cross validation
+to find the optimal tuning parameters for each model.
+
 ## Linear model
 
     ## 
