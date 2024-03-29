@@ -6,7 +6,7 @@ output: github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = T, message = F, warning = F, cache = T)
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
 
 library(tidyverse)
 library(ggplot2)
@@ -43,15 +43,13 @@ df_test = testing(data_split) |>
 
 # set up 10-fold CV
 ctrl1 <- trainControl(
-  method = "repeatedcv",
-  number = 10,
-  repeats = 5,
-  selectionFunction = "best"
+  method = "cv",
+  number = 10
 )
-
 ```
 
 # Model training
+For the model training, I am going to implement 10-fold cross validation to find the optimal tuning parameters for each model.
 
 ## Linear model
 ```{r lm}
@@ -85,7 +83,7 @@ lasso.fit <-
     method = "glmnet",
     tuneGrid = expand.grid(
       alpha = 1,
-      lambda = exp(seq(2, 0, length = 100))
+      lambda = exp(seq(2, -10, length = 100))
     ),
     trControl = ctrl1
   )
@@ -99,7 +97,7 @@ plot(lasso.fit, xTrans = log)
 lasso.fit$bestTune
 
 # obtain the test error
-lasso.pred <- predict(lasso.fit, newdata = df_test)
+lasso.pred <- predict(lasso.fit, newdata = df_test |> select(!recovery_time))
 mean((lasso.pred - pull(df_test, "recovery_time"))^2) 
 ```
 
@@ -115,7 +113,7 @@ ridge.fit <-
     method = "glmnet",
     tuneGrid = expand.grid(
       alpha = 0,
-      lambda = exp(seq(2, 0, length = 100))
+      lambda = exp(seq(2, -2, length = 100))
     ),
     trControl = ctrl1
   )
@@ -129,7 +127,7 @@ plot(ridge.fit, xTrans = log)
 ridge.fit$bestTune
 
 # obtain the test error
-ridge.pred <- predict(ridge.fit, newdata = df_test)
+ridge.pred <- predict(ridge.fit, newdata = df_test |> select(!recovery_time))
 mean((ridge.pred - pull(df_test, "recovery_time"))^2) 
 ```
 
@@ -167,7 +165,7 @@ plot(enet.fit, par.settings = myPar, xTrans = log)
 coef(enet.fit$finalModel, s = enet.fit$bestTune$lambda)
 
 # obtain predicted values
-enet.pred <- predict(enet.fit, newdata = df_test)
+enet.pred <- predict(enet.fit, newdata = df_test |> select(!recovery_time))
 # test error
 mean((enet.pred - pull(df_test, "recovery_time"))^2)
 ```
@@ -188,7 +186,7 @@ set.seed(2024)
 pcr.fit <- train(
   x, y,
   method = "pcr",
-  tuneGrid = data.frame(ncomp = 1:18),
+  tuneGrid = data.frame(ncomp = 1:17),
   trControl = ctrl1,
   preProcess = c("center", "scale")
 )
@@ -208,7 +206,6 @@ ggplot(pcr.fit, highlight = T)
 mean((pred.pcr - y2)^2)
 ```
 
-
 ## Partial Least Squares model (PLS)
 ```{r pls}
 set.seed(2024)
@@ -216,7 +213,7 @@ set.seed(2024)
 pls.fit <- train(
   x, y,
   method = "pls",
-  tuneGrid = data.frame(ncomp = 1:18),
+  tuneGrid = data.frame(ncomp = 1:17),
   trControl = ctrl1,
   preProcess = c("center", "scale")
 )
@@ -262,13 +259,37 @@ plot(mars.fit)
 vip(mars.fit$finalModel, type = "nsubsets")
 
 # obtain the test error
-mars.pred <- predict(mars.fit, newdata = df_test)
+mars.pred <- predict(mars.fit, newdata = df_test |> select(!recovery_time))
 mean((mars.pred - pull(df_test, "recovery_time"))^2) 
 ```
 
+## GAM
+```{r gam}
+set.seed(2024)
+
+# fit gam model
+gam.fit <- train(
+  x = df_train[1:14],
+  y = df_train$recovery_time,
+  method = "gam",
+  metric = "RMSE",
+  trControl = ctrl1
+)
+
+summary(gam.fit$finalModel)
+
+# best tuning parameters
+gam.fit$bestTune
+
+# obtain the test error
+gam.pred <- predict(gam.fit, newdata = df_test |> select(!recovery_time))
+mean((gam.pred - pull(df_test, "recovery_time"))^2) 
+```
+
+
 ## Model Comparison
 ```{r}
-# resampling 
+# resampling
 resamp <- resamples(list(
   lm = lm.fit,
   lasso = lasso.fit,
@@ -276,12 +297,13 @@ resamp <- resamples(list(
   elastic_net = enet.fit,
   pcr = pcr.fit,
   pls = pls.fit,
-  mars = mars.fit
+  mars = mars.fit,
+  gam = gam.fit
 ))
 
 summary(resamp)
 
-# visualize RMSEs 
+# visualize RMSEs
 bwplot(resamp, metric = "RMSE")
 ```
 

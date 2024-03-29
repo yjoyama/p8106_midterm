@@ -48,26 +48,63 @@ cate_recov = df_recov |>
 conti_recov = df_recov |>
   select(age, height, weight, bmi, sbp, ldl, recovery_time)
 
-ggplot(gather(conti_recov, cols, value), aes(x = value)) + 
-       geom_histogram(binwidth = 20) + facet_grid(.~cols)
+#ggplot(gather(conti_recov, cols, value), aes(x = value)) + 
+#       geom_histogram(binwidth = 20) + facet_grid(.~cols)
+
+#library(Hmisc)
+#hist.data.frame(conti_recov)
+
+par(mfrow = c(2, 4),  # Layout: 2 rows, 2 columns
+    oma = c(2, 2, 3, 1),  # Outer margins
+    mar = c(4, 4, 2, 1),  # Inner margins
+    mgp = c(2, 1, 0))     # Margins for labels and title
+
+hist(conti_recov$age, main = "Age", xlab = "Year", ylab = "Frequency")
+hist(conti_recov$height, main = "Height", xlab = "cm", ylab = "Frequency")
+hist(conti_recov$weight, main = "Weight", xlab = "kl", ylab = "Frequency")
+hist(conti_recov$bmi, main = "BMI", xlab = " ", ylab = "Frequency")
+hist(conti_recov$sbp, main = "SBP", xlab = "mm/Hg", ylab = "Frequency")
+hist(conti_recov$ldl, main = "LDL", xlab = "mg/dL", ylab = "Frequency")
+hist(conti_recov$recovery_time, main = "Recovery Time", xlab = "Day", ylab = "Frequency")
 ```
 
 ![](eda_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
+# Bar plot
+
 ``` r
-library(Hmisc)
-hist.data.frame(conti_recov)
+cate_recov = df_recov |>
+  select(gender, race, smoking, hypertension, diabetes, vaccine, severity, study)
+#ggplot(gather(cate_recov, cols, value), aes(x = value)) + 
+#       geom_bar(binwidth = 20) + facet_grid(.~cols)
+
+# Setting up the plotting area
+par(mfrow = c(2, 4),  # Layout: 2 rows, 4 columns
+    oma = c(2, 2, 3, 1),  # Outer margins
+    mar = c(4, 4, 2, 1),  # Inner margins
+    mgp = c(2, 1, 0))     # Margins for labels and title
+
+barplot(table(cate_recov$gender), main = "Gender", ylab = "Count")
+barplot(table(cate_recov$race), main = "Race", ylab = "Count")
+barplot(table(cate_recov$smoking), main = "Smoking", ylab = "Count")
+barplot(table(cate_recov$hypertension), main = "Hypertension", ylab = "Count")
+barplot(table(cate_recov$diabetes), main = "Diabetes", ylab = "Count")
+barplot(table(cate_recov$vaccine), main = "Vaccine", ylab = "Count")
+barplot(table(cate_recov$severity), main = "Severity", ylab = "Count")
+barplot(table(cate_recov$study), main = "Study", ylab = "Count")
 ```
 
-![](eda_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->
-
-# Bar plot
+![](eda_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
 # Correlation
 
 ``` r
-numeric_df_recov <- df_recov %>%
+numeric_df_recov <- df_recov |>
+  mutate(race = as.numeric(race)) |>
+  mutate(smoking = as.numeric(smoking)) |>
+  mutate(study = as.numeric(as.factor(study))) |>
   select_if(is.numeric)
+
 
 # Compute the correlation matrix
 correlation_matrix <- cor(numeric_df_recov)

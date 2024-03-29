@@ -3,14 +3,6 @@ Midterm Project
 Yuki Joyama
 2024-03-19
 
-``` r
-# read RData file
-df_recov <- get(load("./data/recovery.RData")) |> 
-  janitor::clean_names()
-
-head(df_recov)
-```
-
     ##   id age gender race smoking height weight  bmi hypertension diabetes sbp ldl
     ## 1  1  56      0    1       2  170.2   78.7 27.2            0        0 120  97
     ## 2  2  70      1    1       1  169.6   73.1 25.4            1        0 134 112
@@ -26,44 +18,9 @@ head(df_recov)
     ## 5       1        0     A            40
     ## 6       0        0     A            34
 
-``` r
-# partition (training:test=80:20)
-set.seed(2024)
-data_split = initial_split(df_recov, prop = .80)
-# training data
-df_train = training(data_split) |> 
-  select(!id)
-# test data
-df_test = testing(data_split) |> 
-  select(!id)
-
-# set up 10-fold CV
-ctrl1 <- trainControl(
-  method = "repeatedcv",
-  number = 10,
-  repeats = 5,
-  selectionFunction = "best"
-)
-```
-
 # Model training
 
 ## Linear model
-
-``` r
-set.seed(2024)
-
-lm.fit <- train(
-  recovery_time ~ .,
-  data = df_train,
-  method = "lm",
-  metric = "RMSE",
-  trControl = ctrl1
-)
-
-# check the model
-summary(lm.fit$finalModel)
-```
 
     ## 
     ## Call:
@@ -100,186 +57,74 @@ summary(lm.fit$finalModel)
     ## Multiple R-squared:  0.2256, Adjusted R-squared:   0.22 
     ## F-statistic: 40.81 on 17 and 2382 DF,  p-value: < 2.2e-16
 
-``` r
-# obtain the test error
-lm.pred <- predict(lm.fit, newdata = df_test)
-mean((lm.pred - pull(df_test, "recovery_time"))^2) 
-```
-
     ## [1] 471.2063
 
 ## Lasso
 
-``` r
-set.seed(2024)
-
-# find tuning parameter by CV
-lasso.fit <- 
-  train(
-    recovery_time ~ .,
-    data = df_train,
-    method = "glmnet",
-    tuneGrid = expand.grid(
-      alpha = 1,
-      lambda = exp(seq(2, 0, length = 100))
-    ),
-    trControl = ctrl1
-  )
-
-coef(lasso.fit$finalModel, s = lasso.fit$bestTune$lambda) 
-```
-
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
-    ##                       s1
-    ## (Intercept)   0.58101393
-    ## age           0.17689011
-    ## gender       -1.06968284
-    ## race2         0.03895677
-    ## race3         .         
-    ## race4         .         
-    ## smoking1      .         
-    ## smoking2      .         
-    ## height       -0.08826999
-    ## weight        .         
-    ## bmi           1.69963529
-    ## hypertension  1.05726539
-    ## diabetes      .         
-    ## sbp           .         
-    ## ldl           .         
-    ## vaccine      -4.53664519
-    ## severity      2.68330967
-    ## studyB        2.86278627
-
-``` r
-# plot RMSE and lambda
-plot(lasso.fit, xTrans = log)
-```
+    ##                         s1
+    ## (Intercept)  -1.787501e+03
+    ## age           3.031341e-01
+    ## gender       -2.972296e+00
+    ## race2         3.382625e+00
+    ## race3        -6.656733e-01
+    ## race4        -1.424613e+00
+    ## smoking1      1.719312e+00
+    ## smoking2      3.467565e+00
+    ## height        1.040285e+01
+    ## weight       -1.127175e+01
+    ## bmi           3.419317e+01
+    ## hypertension  2.675621e+00
+    ## diabetes     -1.670519e+00
+    ## sbp           .           
+    ## ldl          -2.915282e-02
+    ## vaccine      -6.297274e+00
+    ## severity      5.876364e+00
+    ## studyB        5.043089e+00
 
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/lasso-1.png)<!-- -->
 
-``` r
-# print the best tuning parameter
-lasso.fit$bestTune
-```
+    ##    alpha      lambda
+    ## 43     1 0.007379194
 
-    ##   alpha lambda
-    ## 1     1      1
-
-``` r
-# obtain the test error
-lasso.pred <- predict(lasso.fit, newdata = df_test)
-mean((lasso.pred - pull(df_test, "recovery_time"))^2) 
-```
-
-    ## [1] 608.0764
+    ## [1] 475.4081
 
 ## Ridge
 
-``` r
-set.seed(2024)
-
-# find tuning parameter by CV
-ridge.fit <- 
-  train(
-    recovery_time ~ .,
-    data = df_train,
-    method = "glmnet",
-    tuneGrid = expand.grid(
-      alpha = 0,
-      lambda = exp(seq(2, 0, length = 100))
-    ),
-    trControl = ctrl1
-  )
-
-coef(ridge.fit$finalModel, s = ridge.fit$bestTune$lambda) 
-```
-
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
-    ##                        s1
-    ## (Intercept)  -36.94667718
-    ## age            0.33268421
-    ## gender        -2.84119812
-    ## race2          3.61743614
-    ## race3         -0.65708318
-    ## race4         -1.86496539
-    ## smoking1       1.49752762
-    ## smoking2       2.76787312
-    ## height         0.08219790
-    ## weight        -0.34473050
-    ## bmi            2.75645895
-    ## hypertension   2.68086108
-    ## diabetes      -1.94769945
-    ## sbp            0.00158031
-    ## ldl           -0.02740337
-    ## vaccine       -6.25107058
-    ## severity       5.35496926
-    ## studyB         4.88214929
-
-``` r
-# plot RMSE and lambda
-plot(ridge.fit, xTrans = log)
-```
+    ##                         s1
+    ## (Intercept)  -88.793877369
+    ## age            0.337716864
+    ## gender        -2.887487626
+    ## race2          3.653136318
+    ## race3         -0.670122648
+    ## race4         -1.893301307
+    ## smoking1       1.533851174
+    ## smoking2       2.852821090
+    ## height         0.388447289
+    ## weight        -0.672787548
+    ## bmi            3.714325264
+    ## hypertension   2.787728002
+    ## diabetes      -1.968811271
+    ## sbp           -0.004322627
+    ## ldl           -0.028329531
+    ## vaccine       -6.350093251
+    ## severity       5.448595072
+    ## studyB         4.965623471
 
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/ridge-1.png)<!-- -->
 
-``` r
-# print the best tuning parameter
-ridge.fit$bestTune
-```
+    ##    alpha    lambda
+    ## 36     0 0.5566277
 
-    ##   alpha lambda
-    ## 1     0      1
-
-``` r
-# obtain the test error
-ridge.pred <- predict(ridge.fit, newdata = df_test)
-mean((ridge.pred - pull(df_test, "recovery_time"))^2) 
-```
-
-    ## [1] 589.3664
+    ## [1] 584.6444
 
 ## Elastic net
 
-``` r
-set.seed(2024)
-
-# find tuning parameter by CV
-enet.fit <- 
-  train(
-    recovery_time ~ .,
-    data = df_train,
-    method = "glmnet",
-    tuneGrid = expand.grid(
-      alpha = seq(0, 1, length = 20),
-      lambda = exp(seq(2, 0, length = 100))
-    ),
-    trControl = ctrl1
-  )
-
-# check the best tuning parameter
-enet.fit$bestTune
-```
-
     ##   alpha lambda
     ## 1     0      1
 
-``` r
-# plot RMSE, lambda and alpha
-myCol <- rainbow(25)
-myPar <- list(
-  superpose.symbol = list(col = myCol),
-  superpose.line = list(col = myCol)
-)
-
-plot(enet.fit, par.settings = myPar, xTrans = log)
-```
-
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/enet-1.png)<!-- -->
-
-``` r
-# coefficients in the final model
-coef(enet.fit$finalModel, s = enet.fit$bestTune$lambda)
-```
 
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
     ##                        s1
@@ -301,40 +146,10 @@ coef(enet.fit$finalModel, s = enet.fit$bestTune$lambda)
     ## vaccine       -6.25107058
     ## severity       5.35496926
     ## studyB         4.88214929
-
-``` r
-# obtain predicted values
-enet.pred <- predict(enet.fit, newdata = df_test)
-# test error
-mean((enet.pred - pull(df_test, "recovery_time"))^2)
-```
 
     ## [1] 589.3664
 
 ## Principal Components Regression model (PCR)
-
-``` r
-# prepare x and y
-# training 
-x <- model.matrix(recovery_time ~ ., data = df_train)[, -1]
-y <- df_train$recovery_time
-
-# test
-x2 <- model.matrix(recovery_time ~ ., df_test)[, -1]
-y2 <- df_test$recovery_time
-
-set.seed(2024)
-
-pcr.fit <- train(
-  x, y,
-  method = "pcr",
-  tuneGrid = data.frame(ncomp = 1:18),
-  trControl = ctrl1,
-  preProcess = c("center", "scale")
-)
-
-summary(pcr.fit)
-```
 
     ## Data:    X dimension: 2400 17 
     ##  Y dimension: 2400 1
@@ -351,203 +166,142 @@ summary(pcr.fit)
     ## X            98.80     99.99    100.00
     ## .outcome     13.09     13.16     22.56
 
-``` r
-# obtain predicted values 
-pred.pcr <- predict(
-  pcr.fit, 
-  newdata = x2
-)
-
-# visualize RMSE and the number of components
-ggplot(pcr.fit, highlight = T) 
-```
-
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/pcr-1.png)<!-- -->
-
-``` r
-# test MSE
-mean((pred.pcr - y2)^2)
-```
 
     ## [1] 471.2063
 
 ## Partial Least Squares model (PLS)
 
-``` r
-set.seed(2024)
-
-pls.fit <- train(
-  x, y,
-  method = "pls",
-  tuneGrid = data.frame(ncomp = 1:18),
-  trControl = ctrl1,
-  preProcess = c("center", "scale")
-)
-
-summary(pls.fit)
-```
-
     ## Data:    X dimension: 2400 17 
     ##  Y dimension: 2400 1
     ## Fit method: oscorespls
-    ## Number of components considered: 11
+    ## Number of components considered: 12
     ## TRAINING: % variance explained
     ##           1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps
     ## X           10.01    18.15    28.73    34.35    37.88    42.14    44.93
     ## .outcome    12.16    13.12    13.21    13.36    13.85    14.53    18.77
-    ##           8 comps  9 comps  10 comps  11 comps
-    ## X           47.96    53.46     59.15     65.10
-    ## .outcome    22.40    22.55     22.56     22.56
-
-``` r
-# obtain predicted values 
-pred.pls <- predict(
-  pls.fit, 
-  newdata = x2
-)
-
-# visualize RMSE and the number of components
-ggplot(pls.fit, highlight = T) 
-```
+    ##           8 comps  9 comps  10 comps  11 comps  12 comps
+    ## X           47.96    53.46     59.15     65.10     70.87
+    ## .outcome    22.40    22.55     22.56     22.56     22.56
 
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/pls-1.png)<!-- -->
 
-``` r
-# test MSE
-mean((pred.pls - y2)^2)
-```
-
-    ## [1] 471.1963
+    ## [1] 471.2062
 
 ## MARS
 
-``` r
-set.seed(2024)
-
-# fit mars model
-mars.fit <- train(
-  x = df_train[1:14],
-  y = df_train$recovery_time,
-  method = "earth",
-  tuneGrid = expand.grid(degree = 1:5, nprune = 2:30),
-  metric = "RMSE",
-  trControl = ctrl1
-)
-
-summary(mars.fit$finalModel)
-```
-
     ## Call: earth(x=data.frame[2400,14], y=c(33,44,33,27,6...), keepxy=TRUE,
-    ##             degree=1, nprune=13)
+    ##             degree=4, nprune=7)
     ## 
-    ##                 coefficients
-    ## (Intercept)         7.389076
-    ## gender             -3.382257
-    ## hypertension        3.359153
-    ## vaccine            -6.322448
-    ## severity            6.023281
-    ## studyB              4.362768
-    ## h(height-158.4)     1.101916
-    ## h(88.9-weight)      1.144898
-    ## h(weight-88.9)     -2.297625
-    ## h(bmi-25.7)         4.499418
-    ## h(bmi-30.3)         9.950899
-    ## h(bmi-33.2)       -38.658265
-    ## h(bmi-34)          66.317925
+    ##                                       coefficients
+    ## (Intercept)                              22.435204
+    ## vaccine                                  -6.264022
+    ## h(bmi-25.7)                               4.898496
+    ## h(30.3-bmi)                               3.574364
+    ## h(bmi-30.3) * studyB                      9.782606
+    ## h(164-height) * h(bmi-30.3) * studyB      2.990502
+    ## h(87.6-weight) * h(bmi-30.3) * studyB    -2.640353
     ## 
-    ## Selected 13 of 22 terms, and 8 of 17 predictors (nprune=13)
+    ## Selected 7 of 22 terms, and 5 of 17 predictors (nprune=7)
     ## Termination condition: Reached nk 35
-    ## Importance: bmi, vaccine, studyB, severity, weight, height, gender, ...
-    ## Number of terms at each degree of interaction: 1 12 (additive model)
-    ## GCV 352.8781    RSS 829355.5    GRSq 0.2964487    RSq 0.3104552
-
-``` r
-# best tuning parameters
-mars.fit$bestTune
-```
+    ## Importance: bmi, studyB, height, weight, vaccine, age-unused, ...
+    ## Number of terms at each degree of interaction: 1 3 1 2
+    ## GCV 305.1695    RSS 722673.9    GRSq 0.3915679    RSq 0.3991527
 
     ##    nprune degree
-    ## 12     13      1
+    ## 93      7      4
 
-``` r
-# plot
-plot(mars.fit)
-```
+![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-1.png)<!-- -->![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-2.png)<!-- -->
 
-![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-1.png)<!-- -->
+    ## [1] 311.0194
 
-``` r
-# relative variable importance
-vip(mars.fit$finalModel, type = "nsubsets")
-```
+## GAM
 
-![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-2.png)<!-- -->
+    ## 
+    ## Family: gaussian 
+    ## Link function: identity 
+    ## 
+    ## Formula:
+    ## .outcome ~ gender + hypertension + diabetes + vaccine + severity + 
+    ##     study + smoking + race + s(age) + s(sbp) + s(ldl) + s(bmi) + 
+    ##     s(height) + s(weight)
+    ## 
+    ## Parametric coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   43.1568     1.0646  40.540  < 2e-16 ***
+    ## gender        -3.3920     0.7687  -4.413 1.07e-05 ***
+    ## hypertension   2.7655     1.2687   2.180  0.02937 *  
+    ## diabetes      -1.4274     1.0750  -1.328  0.18433    
+    ## vaccine       -6.3431     0.7834  -8.097 8.88e-16 ***
+    ## severity       5.9477     1.2351   4.816 1.56e-06 ***
+    ## studyB         4.6537     0.8190   5.682 1.50e-08 ***
+    ## smoking1       1.9909     0.8684   2.293  0.02195 *  
+    ## smoking2       4.1584     1.2778   3.254  0.00115 ** 
+    ## race2          2.5889     1.7284   1.498  0.13431    
+    ## race3         -0.5280     0.9743  -0.542  0.58789    
+    ## race4         -1.2561     1.3982  -0.898  0.36906    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Approximate significance of smooth terms:
+    ##             edf Ref.df      F p-value    
+    ## s(age)    1.000  1.000  6.114 0.01348 *  
+    ## s(sbp)    1.196  1.367  0.093 0.91631    
+    ## s(ldl)    1.000  1.000  1.617 0.20368    
+    ## s(bmi)    8.607  8.945 63.287 < 2e-16 ***
+    ## s(height) 1.000  1.000  5.495 0.01915 *  
+    ## s(weight) 2.750  3.732  4.360 0.00163 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## R-sq.(adj) =    0.3   Deviance explained = 30.8%
+    ## GCV =    355  Scale est. = 350.93    n = 2400
 
-``` r
-# obtain the test error
-mars.pred <- predict(mars.fit, newdata = df_test)
-mean((mars.pred - pull(df_test, "recovery_time"))^2) 
-```
+    ##   select method
+    ## 1  FALSE GCV.Cp
 
-    ## [1] 422.1784
+    ## [1] 427.107
 
 ## Model Comparison
-
-``` r
-# resampling 
-resamp <- resamples(list(
-  lm = lm.fit,
-  lasso = lasso.fit,
-  ridge = ridge.fit,
-  elastic_net = enet.fit,
-  pcr = pcr.fit,
-  pls = pls.fit,
-  mars = mars.fit
-))
-
-summary(resamp)
-```
 
     ## 
     ## Call:
     ## summary.resamples(object = resamp)
     ## 
-    ## Models: lm, lasso, ridge, elastic_net, pcr, pls, mars 
-    ## Number of resamples: 50 
+    ## Models: lm, lasso, ridge, elastic_net, pcr, pls, mars, gam 
+    ## Number of resamples: 10 
     ## 
     ## MAE 
     ##                 Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
-    ## lm          11.74160 12.49780 12.87502 12.97722 13.45592 14.97208    0
-    ## lasso       11.47695 12.42761 12.91792 13.00355 13.47940 14.37897    0
-    ## ridge       11.62019 12.55537 12.96290 13.11441 13.61582 14.67843    0
-    ## elastic_net 11.62019 12.55537 12.96290 13.11441 13.61582 14.67843    0
-    ## pcr         11.74160 12.49780 12.87502 12.97722 13.45592 14.97208    0
-    ## pls         11.74153 12.49777 12.87491 12.97718 13.45593 14.97204    0
-    ## mars        11.07337 11.97671 12.53372 12.52419 13.07886 14.03005    0
+    ## lm          11.74160 12.57542 13.05304 12.96649 13.35735 14.01804    0
+    ## lasso       11.68974 12.48058 12.99758 12.91398 13.29920 13.96407    0
+    ## ridge       11.61061 12.89322 13.00231 13.07056 13.44631 14.29571    0
+    ## elastic_net 11.62019 12.91794 13.00959 13.08798 13.45543 14.32760    0
+    ## pcr         11.74160 12.57542 13.05304 12.96649 13.35735 14.01804    0
+    ## pls         11.74160 12.57540 13.05304 12.96648 13.35735 14.01805    0
+    ## mars        11.29074 11.69608 11.96643 12.04453 12.56542 12.82283    0
+    ## gam         11.18041 12.14532 12.58068 12.46836 12.96641 13.51204    0
     ## 
     ## RMSE 
     ##                 Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
-    ## lm          15.47489 17.30781 18.66710 19.68814 20.85903 29.12836    0
-    ## lasso       15.19120 17.92370 19.91830 20.82733 22.13757 32.42313    0
-    ## ridge       15.36332 17.82198 19.72293 20.63005 21.86869 31.73377    0
-    ## elastic_net 15.36332 17.82198 19.72293 20.63005 21.86869 31.73377    0
-    ## pcr         15.47489 17.30781 18.66710 19.68814 20.85903 29.12836    0
-    ## pls         15.47433 17.30754 18.66679 19.68812 20.85922 29.12867    0
-    ## mars        14.69598 16.84460 18.59102 19.04707 20.79798 27.20576    0
+    ## lm          16.73131 17.89516 19.21757 19.71575 20.50813 24.32138    0
+    ## lasso       16.59387 17.90506 19.18119 19.71227 20.52328 24.38985    0
+    ## ridge       15.36616 19.20411 19.54329 20.58662 21.68757 26.05950    0
+    ## elastic_net 15.36332 19.26876 19.58469 20.64163 21.75188 26.14661    0
+    ## pcr         16.73131 17.89516 19.21757 19.71575 20.50813 24.32138    0
+    ## pls         16.73129 17.89516 19.21756 19.71574 20.50813 24.32139    0
+    ## mars        15.54017 17.25203 18.04581 18.46486 18.75092 22.31588    0
+    ## gam         15.93861 16.89042 18.91441 18.98713 20.21679 22.83180    0
     ## 
     ## Rsquared 
-    ##                   Min.    1st Qu.    Median      Mean   3rd Qu.      Max. NA's
-    ## lm          0.06611697 0.17365546 0.2076818 0.2138144 0.2452558 0.3778304    0
-    ## lasso       0.03150644 0.07989604 0.1078604 0.1181922 0.1493147 0.2597958    0
-    ## ridge       0.04922844 0.09702647 0.1255336 0.1317595 0.1643056 0.2736369    0
-    ## elastic_net 0.04922844 0.09702647 0.1255336 0.1317595 0.1643056 0.2736369    0
-    ## pcr         0.06611697 0.17365546 0.2076818 0.2138144 0.2452558 0.3778304    0
-    ## pls         0.06609999 0.17366081 0.2076837 0.2138159 0.2452710 0.3777927    0
-    ## mars        0.08969724 0.19744343 0.2565861 0.2746779 0.3436831 0.5103574    0
-
-``` r
-# visualize RMSEs 
-bwplot(resamp, metric = "RMSE")
-```
+    ##                   Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
+    ## lm          0.06611697 0.2019001 0.2268777 0.2122074 0.2473751 0.2819362    0
+    ## lasso       0.07043484 0.2001108 0.2272077 0.2117944 0.2465423 0.2796917    0
+    ## ridge       0.09486261 0.1145127 0.1348116 0.1368990 0.1477628 0.2011960    0
+    ## elastic_net 0.09056248 0.1109594 0.1288049 0.1323157 0.1435750 0.1967602    0
+    ## pcr         0.06611697 0.2019001 0.2268777 0.2122074 0.2473751 0.2819362    0
+    ## pls         0.06611802 0.2019003 0.2268774 0.2122076 0.2473758 0.2819355    0
+    ## mars        0.04864786 0.2039051 0.3015203 0.3135288 0.3970823 0.6892535    0
+    ## gam         0.09606751 0.2020966 0.2670992 0.2781279 0.3666627 0.4376890    0
 
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
