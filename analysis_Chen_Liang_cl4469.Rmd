@@ -264,7 +264,12 @@ resamp <- resamples(list(
 summary(resamp)
 
 # visualization
-bwplot(resamp, metric = "RMSE")
+modelcomp <- bwplot(resamp, metric = "RMSE",main = "Comparison of Model RMSE Values")
+
+modelcomp
+
+png(filename = "./plots/modelcomp.png", width = 3, height = 1, units = "in", res = 80)
+
 ```
 
 
