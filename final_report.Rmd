@@ -49,8 +49,7 @@ summary(df_recov)
 The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time.
 
 Table 1: Baseline Characteristics  
-![](./Rplot02.png){width=50%, height=50%}  
-
+![](./Rplot03.png){width=50%, height=50%}  
 
 
 # Model Training
@@ -97,14 +96,7 @@ mars.fit <- train(
 
 Our final MARS model is as follows:   
 
-$\hat{y}$ = `r round(coef(mars.fit$finalModel)[1], 3)` + `r round(coef(mars.fit$finalModel)[2], 3)` $\times$ h(30.3 - bmi) + `r round(coef(mars.fit$finalModel)[3], 3)` $\times$ h(bmi - 30.3) * studyB + `r round(coef(mars.fit$finalModel)[4], 3)` $\times$ vaccine + `r round(coef(mars.fit$finalModel)[5], 3)` $\times$ h(164 - height) * h(bmi - 30.3) * studyB + `r round(coef(mars.fit$finalModel)[6], 3)` $\times$ h(bmi - 25.7) + `r round(coef(mars.fit$finalModel)[7], 3)` $\times$ h(87.6 - weight) * h(bmi - 30.3) * studyB  
-where $h(.)$ is hinge function.   
-
-The summary of the final MARS model is shown in Table 2.   
-
-Figure 2 illustrates that study B, BMI, height, weight, and vaccination status have the non-zero importance value in the final model.  
-
-![Variance Importance Plot](./Rplot.png){width=50%, height=30% }
+$\hat{y}$ = `r round(coef(mars.fit$finalModel)[1], 3)` + `r round(coef(mars.fit$finalModel)[2], 3)` $\times$ h(30.3 - bmi) + `r round(coef(mars.fit$finalModel)[3], 3)` $\times$ h(bmi - 30.3) * studyB + `r round(coef(mars.fit$finalModel)[4], 3)` $\times$ vaccine + `r round(coef(mars.fit$finalModel)[5], 3)` $\times$ h(164 - height) * h(bmi - 30.3) * studyB + `r round(coef(mars.fit$finalModel)[6], 3)` $\times$ h(bmi - 25.7) + `r round(coef(mars.fit$finalModel)[7], 3)` $\times$ h(87.6 - weight) * h(bmi - 30.3) * studyB, where $h(.)$ is a hinge function   
 
 Table 2: Summary of the MARS model
 ```{r table2, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
@@ -128,10 +120,33 @@ row.names(df)<-NULL
 pander(df, style = 'rmarkdown')
 ```
 
+The summary of the final MARS model is shown in Table 2. Vaccinated people have `r -round(coef(mars.fit$finalModel)[4], 3)` shorter recovery time (days) compared to non-vaccinated ones, holding other variables constant. The model shows that BMI has two knots (25.7 and 30.3). This can be expressed as follows:     
+
+$$
+\text{Recovery time} = 
+\begin{cases}
+22.435 & \text{for } \text{BMI}\leq 25.7\\
+22.435 + 4.898 \text{ (BMI - 25.7)} & \text{for } 25.7\leq \text{BMI}\leq 30.3\\
+22.435 + 3.574\text{ (30.3 - BMI)} & \text{for } 30.3\leq \text{BMI}
+\end{cases}
+$$  
+
+All else being equal, if BMI is in the range (25.7, 30.3), the recovery time increases by `r round(coef(mars.fit$finalModel)[6], 3)` days for every unit increase in BMI; for those with BMI larger than 30.3, the recovery time increases by `r round(coef(mars.fit$finalModel)[2], 3)` days for every unit increase in BMI. The model also tells us that there are interactions between h(bmi - 30.3) and studyB; h(164 - height), h(bmi - 30.3) and studyB; h(87.6 - weight), h(bmi - 30.3) and studyB. We will discuss this in the later section ("Additional Considerations"). Given the results, we can infer that the followings are the important risk factors for longer recovery time:  
+
+* No history of vaccination  
+* BMI over 25.7  
+* BMI over 30.3 in Study B  
+* Height under 164 cm and BMI over 30.3 in Study B  
+
+Figure 2 illustrates that study B, BMI, height, weight, and vaccination status have the non-zero importance value in the final model.  
+
+![Variance Importance Plot](./Rplot.png){width=50%, height=30%}  
+
+
 # Conclusions
-**In this section, summarize your findings from the model analysis and discuss the insights gained into predicting time to recovery from COVID-19.**
+
 
 # Additional Considerations
-**In your modeling efforts, did you include "study" as a predictor variable? Provide a rationale for your decision, considering the variable's relevance and potential impact on model accuracy and interpretability.**
+
 
 
