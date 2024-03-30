@@ -162,7 +162,7 @@ table_1 = df_recov |>
       recovery_time ~ "Recovery time"
     )
   ) |> 
-  modify_caption("Table 1: Baseline Characteristics") |> 
+  # modify_caption("Table 1: Baseline Characteristics") |> 
   as_flex_table() |> 
   line_spacing(space = 0, part = "body")
 

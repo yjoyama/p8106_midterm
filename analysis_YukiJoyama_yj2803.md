@@ -3,6 +3,14 @@ Midterm Project
 Yuki Joyama
 2024-03-19
 
+``` r
+# read RData file
+df_recov <- get(load("./data/recovery.RData")) |> 
+  janitor::clean_names()
+
+head(df_recov)
+```
+
     ##   id age gender race smoking height weight  bmi hypertension diabetes sbp ldl
     ## 1  1  56      0    1       2  170.2   78.7 27.2            0        0 120  97
     ## 2  2  70      1    1       1  169.6   73.1 25.4            1        0 134 112
@@ -18,12 +26,53 @@ Yuki Joyama
     ## 5       1        0     A            40
     ## 6       0        0     A            34
 
+``` r
+# partition (training:test=80:20)
+set.seed(2024)
+data_split = initial_split(df_recov, prop = .80)
+# training data
+df_train = training(data_split) |> 
+  select(!id)
+# test data
+df_test = testing(data_split) |> 
+  select(!id)
+
+# set up 10-fold CV
+ctrl1 <- trainControl(
+  method = "cv",
+  number = 10
+)
+```
+
 # Model training
 
-For the model training, I am going to implement 10-fold cross validation
-to find the optimal tuning parameters for each model.
+I assume that the predictors of this dataset have a non-linear
+relationship with the response variable (COVID-19 recovery time) so I
+will train with GAM and MARS models as well as linear model, LASSO,
+Ridge, Elastic net regression, PLS and PCR. For the model training, I am
+going to implement 10-fold cross validation to find the optimal tuning
+parameters for each model. Finally, I will look at RMSE to select the
+final model.
 
 ## Linear model
+
+I will fit linear model for the recovery time and include all the other
+variables as predictors.
+
+``` r
+set.seed(2024)
+
+lm.fit <- train(
+  recovery_time ~ .,
+  data = df_train,
+  method = "lm",
+  metric = "RMSE",
+  trControl = ctrl1
+)
+
+# check the model
+summary(lm.fit$finalModel)
+```
 
     ## 
     ## Call:
@@ -60,9 +109,37 @@ to find the optimal tuning parameters for each model.
     ## Multiple R-squared:  0.2256, Adjusted R-squared:   0.22 
     ## F-statistic: 40.81 on 17 and 2382 DF,  p-value: < 2.2e-16
 
+``` r
+# obtain the test error
+lm.pred <- predict(lm.fit, newdata = df_test)
+mean((lm.pred - pull(df_test, "recovery_time"))^2) 
+```
+
     ## [1] 471.2063
 
+Ten predictors showed statistically significant effect on the response
+variable. The test error is 471.206.
+
 ## Lasso
+
+``` r
+set.seed(2024)
+
+# find tuning parameter by CV
+lasso.fit <- 
+  train(
+    recovery_time ~ .,
+    data = df_train,
+    method = "glmnet",
+    tuneGrid = expand.grid(
+      alpha = 1,
+      lambda = exp(seq(2, -10, length = 100))
+    ),
+    trControl = ctrl1
+  )
+
+coef(lasso.fit$finalModel, s = lasso.fit$bestTune$lambda) 
+```
 
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
     ##                         s1
@@ -85,14 +162,53 @@ to find the optimal tuning parameters for each model.
     ## severity      5.876364e+00
     ## studyB        5.043089e+00
 
+``` r
+# plot RMSE and lambda
+plot(lasso.fit, xTrans = log)
+```
+
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/lasso-1.png)<!-- -->
+
+``` r
+# print the best tuning parameter
+lasso.fit$bestTune
+```
 
     ##    alpha      lambda
     ## 43     1 0.007379194
 
+``` r
+# obtain the test error
+lasso.pred <- predict(lasso.fit, newdata = df_test |> select(!recovery_time))
+mean((lasso.pred - pull(df_test, "recovery_time"))^2) 
+```
+
     ## [1] 475.4081
 
+16 predictors are included in the model (excet for SBP). The optimal
+tuning parameter is $\lambda=$ 1, 0.0073792.  
+The test error is 475.408.
+
 ## Ridge
+
+``` r
+set.seed(2024)
+
+# find tuning parameter by CV
+ridge.fit <- 
+  train(
+    recovery_time ~ .,
+    data = df_train,
+    method = "glmnet",
+    tuneGrid = expand.grid(
+      alpha = 0,
+      lambda = exp(seq(2, -2, length = 100))
+    ),
+    trControl = ctrl1
+  )
+
+coef(ridge.fit$finalModel, s = ridge.fit$bestTune$lambda) 
+```
 
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
     ##                         s1
@@ -115,19 +231,75 @@ to find the optimal tuning parameters for each model.
     ## severity       5.448595072
     ## studyB         4.965623471
 
+``` r
+# plot RMSE and lambda
+plot(ridge.fit, xTrans = log)
+```
+
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/ridge-1.png)<!-- -->
+
+``` r
+# print the best tuning parameter
+ridge.fit$bestTune
+```
 
     ##    alpha    lambda
     ## 36     0 0.5566277
 
+``` r
+# obtain the test error
+ridge.pred <- predict(ridge.fit, newdata = df_test |> select(!recovery_time))
+mean((ridge.pred - pull(df_test, "recovery_time"))^2) 
+```
+
     ## [1] 584.6444
 
+All predictors are included in the model. The optimal tuning parameter
+is $\alpha=$ 0, 0.5566277.  
+The test error is 584.644.
+
 ## Elastic net
+
+``` r
+set.seed(2024)
+
+# find tuning parameter by CV
+enet.fit <- 
+  train(
+    recovery_time ~ .,
+    data = df_train,
+    method = "glmnet",
+    tuneGrid = expand.grid(
+      alpha = seq(0, 1, length = 20),
+      lambda = exp(seq(2, 0, length = 100))
+    ),
+    trControl = ctrl1
+  )
+
+# check the best tuning parameter
+enet.fit$bestTune
+```
 
     ##   alpha lambda
     ## 1     0      1
 
+``` r
+# plot RMSE, lambda and alpha
+myCol <- rainbow(25)
+myPar <- list(
+  superpose.symbol = list(col = myCol),
+  superpose.line = list(col = myCol)
+)
+
+plot(enet.fit, par.settings = myPar, xTrans = log)
+```
+
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/enet-1.png)<!-- -->
+
+``` r
+# coefficients in the final model
+coef(enet.fit$finalModel, s = enet.fit$bestTune$lambda)
+```
 
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
     ##                        s1
@@ -150,9 +322,43 @@ to find the optimal tuning parameters for each model.
     ## severity       5.35496926
     ## studyB         4.88214929
 
+``` r
+# obtain predicted values
+enet.pred <- predict(enet.fit, newdata = df_test |> select(!recovery_time))
+# test error
+mean((enet.pred - pull(df_test, "recovery_time"))^2)
+```
+
     ## [1] 589.3664
 
+All predictors are included in the model. The optimal tuning parameter
+is $\alpha=$ 0 and $\lambda=$ 1.  
+The test error is 589.366.
+
 ## Principal Components Regression model (PCR)
+
+``` r
+# prepare x and y
+# training 
+x <- model.matrix(recovery_time ~ ., data = df_train)[, -1]
+y <- df_train$recovery_time
+
+# test
+x2 <- model.matrix(recovery_time ~ ., df_test)[, -1]
+y2 <- df_test$recovery_time
+
+set.seed(2024)
+
+pcr.fit <- train(
+  x, y,
+  method = "pcr",
+  tuneGrid = data.frame(ncomp = 1:17),
+  trControl = ctrl1,
+  preProcess = c("center", "scale")
+)
+
+summary(pcr.fit)
+```
 
     ## Data:    X dimension: 2400 17 
     ##  Y dimension: 2400 1
@@ -169,11 +375,45 @@ to find the optimal tuning parameters for each model.
     ## X            98.80     99.99    100.00
     ## .outcome     13.09     13.16     22.56
 
+``` r
+# obtain predicted values 
+pred.pcr <- predict(
+  pcr.fit, 
+  newdata = x2
+)
+
+# visualize RMSE and the number of components
+ggplot(pcr.fit, highlight = T) 
+```
+
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/pcr-1.png)<!-- -->
+
+``` r
+# test MSE
+mean((pred.pcr - y2)^2)
+```
 
     ## [1] 471.2063
 
+The PCR model is composed of 17 components.
+
+The test error is 471.206.
+
 ## Partial Least Squares model (PLS)
+
+``` r
+set.seed(2024)
+
+pls.fit <- train(
+  x, y,
+  method = "pls",
+  tuneGrid = data.frame(ncomp = 1:17),
+  trControl = ctrl1,
+  preProcess = c("center", "scale")
+)
+
+summary(pls.fit)
+```
 
     ## Data:    X dimension: 2400 17 
     ##  Y dimension: 2400 1
@@ -187,11 +427,47 @@ to find the optimal tuning parameters for each model.
     ## X           47.96    53.46     59.15     65.10     70.87
     ## .outcome    22.40    22.55     22.56     22.56     22.56
 
+``` r
+# obtain predicted values 
+pred.pls <- predict(
+  pls.fit, 
+  newdata = x2
+)
+
+# visualize RMSE and the number of components
+ggplot(pls.fit, highlight = T) 
+```
+
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/pls-1.png)<!-- -->
+
+``` r
+# test MSE
+mean((pred.pls - y2)^2)
+```
 
     ## [1] 471.2062
 
+The PCR model is composed of 12 components.
+
+The test error is 471.206.
+
 ## MARS
+
+``` r
+set.seed(2024)
+
+# fit mars model
+mars.fit <- train(
+  x = df_train[1:14],
+  y = df_train$recovery_time,
+  method = "earth",
+  tuneGrid = expand.grid(degree = 1:5, nprune = 2:30),
+  metric = "RMSE",
+  trControl = ctrl1
+)
+
+summary(mars.fit$finalModel)
+```
 
     ## Call: earth(x=data.frame[2400,14], y=c(33,44,33,27,6...), keepxy=TRUE,
     ##             degree=4, nprune=7)
@@ -211,14 +487,64 @@ to find the optimal tuning parameters for each model.
     ## Number of terms at each degree of interaction: 1 3 1 2
     ## GCV 305.1695    RSS 722673.9    GRSq 0.3915679    RSq 0.3991527
 
+``` r
+# best tuning parameters
+mars.fit$bestTune
+```
+
     ##    nprune degree
     ## 93      7      4
 
-![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-1.png)<!-- -->![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-2.png)<!-- -->
+``` r
+# plot
+plot(mars.fit)
+```
+
+![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-1.png)<!-- -->
+
+``` r
+# relative variable importance
+vip(mars.fit$finalModel, type = "nsubsets")
+```
+
+![](analysis_YukiJoyama_yj2803_files/figure-gfm/mars-2.png)<!-- -->
+
+``` r
+# obtain the test error
+mars.pred <- predict(mars.fit, newdata = df_test |> select(!recovery_time))
+mean((mars.pred - pull(df_test, "recovery_time"))^2) 
+```
 
     ## [1] 311.0194
 
+The best tuning parameters selected from the cross validation is nprune
+(the upper bound of the number of terms) = 7 and degree = 4.
+
+The final model can be expressed as the following:  
+$\hat{y}$ = 22.435 + 3.574 $\times$ h(30.3 - bmi) + 9.783 $\times$
+h(bmi - 30.3) \* studyB + -6.264 $\times$ vaccine + 2.991 $\times$
+h(164 - height) \* h(bmi - 30.3) \* studyB + 4.898 $\times$ h(bmi -
+25.7) + -2.64 $\times$ h(87.6 - weight) \* h(bmi - 30.3) \* studyB  
+where $h(.)$ is hinge function.
+
+The test error is 311.019.
+
 ## GAM
+
+``` r
+set.seed(2024)
+
+# fit gam model
+gam.fit <- train(
+  x = df_train[1:14],
+  y = df_train$recovery_time,
+  method = "gam",
+  metric = "RMSE",
+  trControl = ctrl1
+)
+
+summary(gam.fit$finalModel)
+```
 
     ## 
     ## Family: gaussian 
@@ -260,12 +586,44 @@ to find the optimal tuning parameters for each model.
     ## R-sq.(adj) =    0.3   Deviance explained = 30.8%
     ## GCV =    355  Scale est. = 350.93    n = 2400
 
+``` r
+# best tuning parameters
+gam.fit$bestTune
+```
+
     ##   select method
     ## 1  FALSE GCV.Cp
 
+``` r
+# obtain the test error
+gam.pred <- predict(gam.fit, newdata = df_test |> select(!recovery_time))
+mean((gam.pred - pull(df_test, "recovery_time"))^2) 
+```
+
     ## [1] 427.107
 
+The model includes 14 predictors. age, sbp, ldl, bmi, height, weight
+have non-linear terms in the model.
+
+The test error is 427.107.
+
 ## Model Comparison
+
+``` r
+# resampling
+resamp <- resamples(list(
+  lm = lm.fit,
+  lasso = lasso.fit,
+  ridge = ridge.fit,
+  elastic_net = enet.fit,
+  pcr = pcr.fit,
+  pls = pls.fit,
+  mars = mars.fit,
+  gam = gam.fit
+))
+
+summary(resamp)
+```
 
     ## 
     ## Call:
@@ -307,4 +665,12 @@ to find the optimal tuning parameters for each model.
     ## mars        0.04864786 0.2039051 0.3015203 0.3135288 0.3970823 0.6892535    0
     ## gam         0.09606751 0.2020966 0.2670992 0.2781279 0.3666627 0.4376890    0
 
+``` r
+# visualize RMSEs
+bwplot(resamp, metric = "RMSE")
+```
+
 ![](analysis_YukiJoyama_yj2803_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+
+Given the output and plot, MARS model has the lowest median RMSE. Hence,
+I will use this as my final model.
