@@ -110,7 +110,7 @@ summary(lm_fit)
 
 ``` r
 # Calculate test error
-lm_test_pred <- predict(lm_fit, newdata = x2) # test dataset
+lm_test_pred <- predict(lm_fit, newdata = x2) 
 lm_test_rmse <- sqrt(mean((lm_test_pred - y2)^2))
 lm_test_rmse
 ```
@@ -661,7 +661,13 @@ summary(resamp)
 
 ``` r
 # visualization
-bwplot(resamp, metric = "RMSE")
+modelcomp <- bwplot(resamp, metric = "RMSE",main = "Comparison of Model RMSE Values")
+
+modelcomp
 ```
 
 ![](analysis_Chen_Liang_cl4469_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+``` r
+png(filename = "./plots/modelcomp.png", width = 3, height = 1, units = "in", res = 80)
+```
