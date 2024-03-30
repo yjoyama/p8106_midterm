@@ -9,51 +9,48 @@ Chen Liang
 # Load data
 recov_df <- get(load("./data/recovery.RData")) |> 
   janitor::clean_names() |>
-  na.omit() |>
-  select(-id)
+  na.omit()
 
 summary(recov_df)
 ```
 
-    ##       age           gender       race     smoking      height     
-    ##  Min.   :42.0   Min.   :0.0000   1:1967   0:1822   Min.   :147.8  
-    ##  1st Qu.:57.0   1st Qu.:0.0000   2: 158   1: 859   1st Qu.:166.0  
-    ##  Median :60.0   Median :0.0000   3: 604   2: 319   Median :169.9  
-    ##  Mean   :60.2   Mean   :0.4853   4: 271            Mean   :169.9  
-    ##  3rd Qu.:63.0   3rd Qu.:1.0000                     3rd Qu.:173.9  
-    ##  Max.   :79.0   Max.   :1.0000                     Max.   :188.6  
-    ##      weight            bmi         hypertension       diabetes     
-    ##  Min.   : 55.90   Min.   :18.80   Min.   :0.0000   Min.   :0.0000  
-    ##  1st Qu.: 75.20   1st Qu.:25.80   1st Qu.:0.0000   1st Qu.:0.0000  
-    ##  Median : 79.80   Median :27.65   Median :0.0000   Median :0.0000  
-    ##  Mean   : 79.96   Mean   :27.76   Mean   :0.4973   Mean   :0.1543  
-    ##  3rd Qu.: 84.80   3rd Qu.:29.50   3rd Qu.:1.0000   3rd Qu.:0.0000  
-    ##  Max.   :103.70   Max.   :38.90   Max.   :1.0000   Max.   :1.0000  
-    ##       sbp             ldl           vaccine         severity    
-    ##  Min.   :105.0   Min.   : 28.0   Min.   :0.000   Min.   :0.000  
-    ##  1st Qu.:125.0   1st Qu.: 97.0   1st Qu.:0.000   1st Qu.:0.000  
-    ##  Median :130.0   Median :110.0   Median :1.000   Median :0.000  
-    ##  Mean   :130.5   Mean   :110.5   Mean   :0.596   Mean   :0.107  
-    ##  3rd Qu.:136.0   3rd Qu.:124.0   3rd Qu.:1.000   3rd Qu.:0.000  
-    ##  Max.   :156.0   Max.   :178.0   Max.   :1.000   Max.   :1.000  
-    ##     study           recovery_time   
-    ##  Length:3000        Min.   :  2.00  
-    ##  Class :character   1st Qu.: 31.00  
-    ##  Mode  :character   Median : 39.00  
-    ##                     Mean   : 42.17  
-    ##                     3rd Qu.: 49.00  
-    ##                     Max.   :365.00
+    ##        id              age           gender       race     smoking 
+    ##  Min.   :   1.0   Min.   :42.0   Min.   :0.0000   1:1967   0:1822  
+    ##  1st Qu.: 750.8   1st Qu.:57.0   1st Qu.:0.0000   2: 158   1: 859  
+    ##  Median :1500.5   Median :60.0   Median :0.0000   3: 604   2: 319  
+    ##  Mean   :1500.5   Mean   :60.2   Mean   :0.4853   4: 271           
+    ##  3rd Qu.:2250.2   3rd Qu.:63.0   3rd Qu.:1.0000                    
+    ##  Max.   :3000.0   Max.   :79.0   Max.   :1.0000                    
+    ##      height          weight            bmi         hypertension   
+    ##  Min.   :147.8   Min.   : 55.90   Min.   :18.80   Min.   :0.0000  
+    ##  1st Qu.:166.0   1st Qu.: 75.20   1st Qu.:25.80   1st Qu.:0.0000  
+    ##  Median :169.9   Median : 79.80   Median :27.65   Median :0.0000  
+    ##  Mean   :169.9   Mean   : 79.96   Mean   :27.76   Mean   :0.4973  
+    ##  3rd Qu.:173.9   3rd Qu.: 84.80   3rd Qu.:29.50   3rd Qu.:1.0000  
+    ##  Max.   :188.6   Max.   :103.70   Max.   :38.90   Max.   :1.0000  
+    ##     diabetes           sbp             ldl           vaccine     
+    ##  Min.   :0.0000   Min.   :105.0   Min.   : 28.0   Min.   :0.000  
+    ##  1st Qu.:0.0000   1st Qu.:125.0   1st Qu.: 97.0   1st Qu.:0.000  
+    ##  Median :0.0000   Median :130.0   Median :110.0   Median :1.000  
+    ##  Mean   :0.1543   Mean   :130.5   Mean   :110.5   Mean   :0.596  
+    ##  3rd Qu.:0.0000   3rd Qu.:136.0   3rd Qu.:124.0   3rd Qu.:1.000  
+    ##  Max.   :1.0000   Max.   :156.0   Max.   :178.0   Max.   :1.000  
+    ##     severity        study           recovery_time   
+    ##  Min.   :0.000   Length:3000        Min.   :  2.00  
+    ##  1st Qu.:0.000   Class :character   1st Qu.: 31.00  
+    ##  Median :0.000   Mode  :character   Median : 39.00  
+    ##  Mean   :0.107                      Mean   : 42.17  
+    ##  3rd Qu.:0.000                      3rd Qu.: 49.00  
+    ##  Max.   :1.000                      Max.   :365.00
 
 ``` r
 # Create a partition index.(training:test=80:20)
 set.seed(2024)
-train_index = createDataPartition(y = recov_df$recovery_time,
-                                 p = 0.8,
-                                 list = FALSE)
-# Extract the training and test data
-training_df = recov_df[train_index, ]
-testing_df = recov_df[-train_index, ]
+train_index = initial_split(recov_df, prop = .80)
 
+# Extract the training and test data
+training_df = training(train_index) |>select(-id)
+testing_df = testing(train_index) |>select(-id)
 # Training data
 x = model.matrix(recovery_time~.,training_df)[, -1]
 y = training_df$recovery_time
@@ -82,34 +79,34 @@ summary(lm_fit)
     ## 
     ## Residuals:
     ##     Min      1Q  Median      3Q     Max 
-    ## -55.624 -10.775  -0.083   8.855 258.233 
+    ## -53.037 -10.712  -0.508   8.268 263.578 
     ## 
     ## Coefficients:
     ##                Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  -2.182e+03  1.133e+02 -19.260  < 2e-16 ***
-    ## age           2.114e-01  1.019e-01   2.075  0.03809 *  
-    ## gender       -2.942e+00  8.106e-01  -3.630  0.00029 ***
-    ## race2         6.251e-01  1.836e+00   0.341  0.73344    
-    ## race3        -1.669e+00  1.034e+00  -1.614  0.10663    
-    ## race4        -9.044e-01  1.444e+00  -0.626  0.53107    
-    ## smoking1      1.981e+00  9.218e-01   2.149  0.03170 *  
-    ## smoking2      2.960e+00  1.344e+00   2.202  0.02775 *  
-    ## height        1.276e+01  6.648e-01  19.191  < 2e-16 ***
-    ## weight       -1.385e+01  7.015e-01 -19.750  < 2e-16 ***
-    ## bmi           4.149e+01  2.015e+00  20.598  < 2e-16 ***
-    ## hypertension  2.320e+00  1.336e+00   1.736  0.08268 .  
-    ## diabetes     -1.632e+00  1.126e+00  -1.449  0.14733    
-    ## sbp           4.959e-02  8.640e-02   0.574  0.56608    
-    ## ldl          -4.700e-02  2.162e-02  -2.174  0.02983 *  
-    ## vaccine      -6.396e+00  8.244e-01  -7.758 1.27e-14 ***
-    ## severity      7.918e+00  1.300e+00   6.092 1.29e-09 ***
-    ## studyB        4.900e+00  8.601e-01   5.697 1.37e-08 ***
+    ## (Intercept)  -1.893e+03  1.155e+02 -16.381  < 2e-16 ***
+    ## age           3.024e-01  1.023e-01   2.955 0.003153 ** 
+    ## gender       -2.988e+00  8.089e-01  -3.694 0.000226 ***
+    ## race2         3.388e+00  1.822e+00   1.859 0.063138 .  
+    ## race3        -6.868e-01  1.027e+00  -0.669 0.503720    
+    ## race4        -1.427e+00  1.472e+00  -0.969 0.332428    
+    ## smoking1      1.749e+00  9.148e-01   1.912 0.055966 .  
+    ## smoking2      3.533e+00  1.344e+00   2.628 0.008635 ** 
+    ## height        1.102e+01  6.773e-01  16.276  < 2e-16 ***
+    ## weight       -1.193e+01  7.152e-01 -16.680  < 2e-16 ***
+    ## bmi           3.608e+01  2.054e+00  17.568  < 2e-16 ***
+    ## hypertension  2.690e+00  1.325e+00   2.030 0.042449 *  
+    ## diabetes     -1.670e+00  1.133e+00  -1.474 0.140535    
+    ## sbp          -6.707e-04  8.631e-02  -0.008 0.993800    
+    ## ldl          -2.969e-02  2.132e-02  -1.393 0.163882    
+    ## vaccine      -6.301e+00  8.250e-01  -7.638 3.18e-14 ***
+    ## severity      5.917e+00  1.301e+00   4.549 5.67e-06 ***
+    ## studyB        5.057e+00  8.613e-01   5.871 4.94e-09 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## Residual standard error: 19.79 on 2384 degrees of freedom
-    ## Multiple R-squared:  0.2597, Adjusted R-squared:  0.2544 
-    ## F-statistic: 49.19 on 17 and 2384 DF,  p-value: < 2.2e-16
+    ## Residual standard error: 19.77 on 2382 degrees of freedom
+    ## Multiple R-squared:  0.2256, Adjusted R-squared:   0.22 
+    ## F-statistic: 40.81 on 17 and 2382 DF,  p-value: < 2.2e-16
 
 ``` r
 # Calculate test error
@@ -118,7 +115,7 @@ lm_test_rmse <- sqrt(mean((lm_test_pred - y2)^2))
 lm_test_rmse
 ```
 
-    ## [1] 21.47581
+    ## [1] 21.70729
 
 ## Lasso Model
 
@@ -150,7 +147,7 @@ lasso_fit$bestTune
 ```
 
     ##   alpha      lambda
-    ## 1     1 0.006737947
+    ## 2     1 0.007454109
 
 ``` r
 # Obtain coefficients in the final model
@@ -159,24 +156,24 @@ coef(lasso_fit$finalModel, s = lasso_fit$bestTune$lambda)
 
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
     ##                         s1
-    ## (Intercept)  -2.086847e+03
-    ## age           2.111038e-01
-    ## gender       -2.903129e+00
-    ## race2         6.153220e-01
-    ## race3        -1.643971e+00
-    ## race4        -8.951082e-01
-    ## smoking1      1.948664e+00
-    ## smoking2      2.927867e+00
-    ## height        1.219404e+01
-    ## weight       -1.325814e+01
-    ## bmi           3.978334e+01
-    ## hypertension  2.304820e+00
-    ## diabetes     -1.624339e+00
-    ## sbp           4.977789e-02
-    ## ldl          -4.650331e-02
-    ## vaccine      -6.395969e+00
-    ## severity      7.907612e+00
-    ## studyB        4.905282e+00
+    ## (Intercept)  -1.786727e+03
+    ## age           3.031362e-01
+    ## gender       -2.972141e+00
+    ## race2         3.382522e+00
+    ## race3        -6.654586e-01
+    ## race4        -1.424497e+00
+    ## smoking1      1.719034e+00
+    ## smoking2      3.466992e+00
+    ## height        1.039828e+01
+    ## weight       -1.126692e+01
+    ## bmi           3.417931e+01
+    ## hypertension  2.675531e+00
+    ## diabetes     -1.670466e+00
+    ## sbp           .           
+    ## ldl          -2.914713e-02
+    ## vaccine      -6.297203e+00
+    ## severity      5.876002e+00
+    ## studyB        5.042943e+00
 
 ``` r
 # Calculate test error
@@ -185,7 +182,7 @@ lasso_test_rmse <- mean((lasso_test_pred - y2)^2)
 lasso_test_rmse
 ```
 
-    ## [1] 461.3265
+    ## [1] 475.4402
 
 ## Elastic Net Model
 
@@ -230,24 +227,24 @@ coef(enet_fit$finalModel, enet_fit$bestTune$lambda)
 
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
     ##                         s1
-    ## (Intercept)  -1.655948e+03
-    ## age           2.072535e-01
-    ## gender       -2.702298e+00
-    ## race2         5.218413e-01
-    ## race3        -1.494128e+00
-    ## race4        -7.975307e-01
-    ## smoking1      1.766698e+00
-    ## smoking2      2.728978e+00
-    ## height        9.653888e+00
-    ## weight       -1.057481e+01
-    ## bmi           3.207384e+01
-    ## hypertension  2.221762e+00
-    ## diabetes     -1.557032e+00
-    ## sbp           4.974952e-02
-    ## ldl          -4.321739e-02
-    ## vaccine      -6.370383e+00
-    ## severity      7.827212e+00
-    ## studyB        4.901177e+00
+    ## (Intercept)  -1.345823e+03
+    ## age           3.044083e-01
+    ## gender       -2.884762e+00
+    ## race2         3.324496e+00
+    ## race3        -5.441131e-01
+    ## race4        -1.360138e+00
+    ## smoking1      1.561219e+00
+    ## smoking2      3.142061e+00
+    ## height        7.797840e+00
+    ## weight       -8.517852e+00
+    ## bmi           2.628087e+01
+    ## hypertension  2.624536e+00
+    ## diabetes     -1.641080e+00
+    ## sbp           .           
+    ## ldl          -2.593299e-02
+    ## vaccine      -6.257870e+00
+    ## severity      5.671095e+00
+    ## studyB        4.960433e+00
 
 ``` r
 # Calculate test error
@@ -256,7 +253,7 @@ enet_test_rmse <- mean((enet_test_pred - y2)^2)
 enet_test_rmse
 ```
 
-    ## [1] 464.4851
+    ## [1] 496.3542
 
 ## Ridge
 
@@ -291,24 +288,24 @@ coef(ridge_fit$finalModel, s = ridge_fit$bestTune$lambda)
 
     ## 18 x 1 sparse Matrix of class "dgCMatrix"
     ##                         s1
-    ## (Intercept)  -105.25903484
-    ## age             0.22871415
-    ## gender         -2.34223209
-    ## race2           0.96528746
-    ## race3          -1.51786231
-    ## race4          -1.28760472
-    ## smoking1        1.61478155
-    ## smoking2        2.77224341
-    ## height          0.50242173
-    ## weight         -0.88976285
-    ## bmi             4.21861393
-    ## hypertension    2.06444017
-    ## diabetes       -1.83506658
-    ## sbp             0.06627462
-    ## ldl            -0.04634671
-    ## vaccine        -6.54140053
-    ## severity        7.92539955
-    ## studyB          5.18688722
+    ## (Intercept)  -88.793877369
+    ## age            0.337716864
+    ## gender        -2.887487626
+    ## race2          3.653136318
+    ## race3         -0.670122648
+    ## race4         -1.893301307
+    ## smoking1       1.533851174
+    ## smoking2       2.852821090
+    ## height         0.388447289
+    ## weight        -0.672787548
+    ## bmi            3.714325264
+    ## hypertension   2.787728002
+    ## diabetes      -1.968811271
+    ## sbp           -0.004322627
+    ## ldl           -0.028329531
+    ## vaccine       -6.350093251
+    ## severity       5.448595072
+    ## studyB         4.965623471
 
 ``` r
 # Calculate test error
@@ -317,7 +314,7 @@ ridge_test_mse <- mean((ridge_test_pred - y2)^2)
 ridge_test_mse
 ```
 
-    ## [1] 510.6402
+    ## [1] 584.6444
 
 ## Principal Component Regression (PCR)
 
@@ -352,24 +349,24 @@ coef(pcr_fit$finalModel, s = pcr_fit$bestTune)
 
     ## , , 17 comps
     ## 
-    ##                 .outcome
-    ## age            0.9423394
-    ## gender        -1.4703745
-    ## race2          0.1394040
-    ## race3         -0.6684241
-    ## race4         -0.2582503
-    ## smoking1       0.8932190
-    ## smoking2       0.9120685
-    ## height        75.5422689
-    ## weight       -98.5058071
-    ## bmi          115.9812842
-    ## hypertension   1.1603216
-    ## diabetes      -0.5865935
-    ## sbp            0.3979801
-    ## ldl           -0.9186050
-    ## vaccine       -3.1478891
-    ## severity       2.4728924
-    ## studyB         2.3055598
+    ##                   .outcome
+    ## age            1.345229648
+    ## gender        -1.493769451
+    ## race2          0.761325281
+    ## race3         -0.276690264
+    ## race4         -0.399028343
+    ## smoking1       0.795261992
+    ## smoking2       1.090904515
+    ## height        65.818417321
+    ## weight       -85.066995624
+    ## bmi          100.591853512
+    ## hypertension   1.345339735
+    ## diabetes      -0.596426494
+    ## sbp           -0.005358771
+    ## ldl           -0.586903327
+    ## vaccine       -3.095789007
+    ## severity       1.842629752
+    ## studyB         2.374295409
 
 ``` r
 # Calculate test error
@@ -378,7 +375,7 @@ pcr_test_mse <- mean((pcr_test_pred - y2)^2)
 pcr_test_mse
 ```
 
-    ## [1] 461.2106
+    ## [1] 471.2063
 
 ## Partial Least Squares model (PLS)
 
@@ -404,33 +401,33 @@ pls_fit$bestTune
 ```
 
     ##    ncomp
-    ## 10    10
+    ## 12    12
 
 ``` r
 # Obtain coefficients in the final model
 coef(pls_fit$finalModel, s = pls_fit$bestTune)
 ```
 
-    ## , , 10 comps
+    ## , , 12 comps
     ## 
-    ##                 .outcome
-    ## age            0.9395515
-    ## gender        -1.4652037
-    ## race2          0.1333538
-    ## race3         -0.6746239
-    ## race4         -0.2570572
-    ## smoking1       0.8926571
-    ## smoking2       0.9121369
-    ## height        75.5403795
-    ## weight       -98.5066328
-    ## bmi          115.9809974
-    ## hypertension   1.1597094
-    ## diabetes      -0.5799247
-    ## sbp            0.3966856
-    ## ldl           -0.9113583
-    ## vaccine       -3.1481168
-    ## severity       2.4789959
-    ## studyB         2.3055630
+    ##                   .outcome
+    ## age            1.345158171
+    ## gender        -1.493772824
+    ## race2          0.761188904
+    ## race3         -0.276878330
+    ## race4         -0.399096705
+    ## smoking1       0.795166426
+    ## smoking2       1.090788616
+    ## height        65.818448742
+    ## weight       -85.066976536
+    ## bmi          100.591848304
+    ## hypertension   1.345385989
+    ## diabetes      -0.596479918
+    ## sbp           -0.005320082
+    ## ldl           -0.586950522
+    ## vaccine       -3.095844913
+    ## severity       1.842596287
+    ## studyB         2.374347318
 
 ``` r
 # Calculate test error
@@ -439,7 +436,7 @@ pls_test_mse <- mean((pls_test_pred - y2)^2)
 pls_test_mse
 ```
 
-    ## [1] 461.2433
+    ## [1] 471.2062
 
 ## GAM
 
@@ -474,9 +471,9 @@ gam_fit$finalModel
     ##     s(sbp) + s(ldl) + s(bmi) + s(height) + s(weight)
     ## 
     ## Estimated degrees of freedom:
-    ## 1.00 1.00 1.00 7.46 7.95 1.00  total = 31.4 
+    ## 1.00 1.20 1.00 8.61 1.00 2.75  total = 27.55 
     ## 
-    ## GCV score: 349.178
+    ## GCV score: 355.0009
 
 ``` r
 # View the model summary
@@ -494,34 +491,34 @@ summary(gam_fit$finalModel)
     ## 
     ## Parametric coefficients:
     ##              Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)   43.5506     1.0681  40.776  < 2e-16 ***
-    ## gender        -3.2725     0.7625  -4.292 1.84e-05 ***
-    ## race2          0.5097     1.7285   0.295   0.7681    
-    ## race3         -1.5887     0.9728  -1.633   0.1026    
-    ## race4         -0.9136     1.3585  -0.673   0.5013    
-    ## smoking1       2.0986     0.8663   2.423   0.0155 *  
-    ## smoking2       3.5623     1.2648   2.816   0.0049 ** 
-    ## hypertension   2.3060     1.2578   1.833   0.0669 .  
-    ## diabetes      -1.6315     1.0585  -1.541   0.1234    
-    ## vaccine       -6.3523     0.7759  -8.187 4.31e-16 ***
-    ## severity       7.9027     1.2215   6.469 1.19e-10 ***
-    ## studyB         4.6159     0.8086   5.709 1.28e-08 ***
+    ## (Intercept)   43.1568     1.0646  40.540  < 2e-16 ***
+    ## gender        -3.3920     0.7687  -4.413 1.07e-05 ***
+    ## race2          2.5889     1.7284   1.498  0.13431    
+    ## race3         -0.5280     0.9743  -0.542  0.58789    
+    ## race4         -1.2561     1.3982  -0.898  0.36906    
+    ## smoking1       1.9909     0.8684   2.293  0.02195 *  
+    ## smoking2       4.1584     1.2778   3.254  0.00115 ** 
+    ## hypertension   2.7655     1.2687   2.180  0.02937 *  
+    ## diabetes      -1.4274     1.0750  -1.328  0.18433    
+    ## vaccine       -6.3431     0.7834  -8.097 8.88e-16 ***
+    ## severity       5.9477     1.2351   4.816 1.56e-06 ***
+    ## studyB         4.6537     0.8190   5.682 1.50e-08 ***
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
     ## Approximate significance of smooth terms:
-    ##             edf Ref.df      F  p-value    
-    ## s(age)    1.000  1.000  1.570 0.210380    
-    ## s(sbp)    1.000  1.000  0.166 0.683927    
-    ## s(ldl)    1.000  1.000  3.666 0.055657 .  
-    ## s(bmi)    7.457  8.358 65.449  < 2e-16 ***
-    ## s(height) 7.947  8.685 12.294  < 2e-16 ***
-    ## s(weight) 1.000  1.000 14.381 0.000153 ***
+    ##             edf Ref.df      F p-value    
+    ## s(age)    1.000  1.000  6.114 0.01348 *  
+    ## s(sbp)    1.196  1.367  0.093 0.91631    
+    ## s(ldl)    1.000  1.000  1.617 0.20368    
+    ## s(bmi)    8.607  8.945 63.287 < 2e-16 ***
+    ## s(height) 1.000  1.000  5.495 0.01915 *  
+    ## s(weight) 2.750  3.732  4.360 0.00163 ** 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
-    ## R-sq.(adj) =  0.344   Deviance explained = 35.2%
-    ## GCV = 349.18  Scale est. = 344.61    n = 2402
+    ## R-sq.(adj) =    0.3   Deviance explained = 30.8%
+    ## GCV =    355  Scale est. = 350.93    n = 2400
 
 ``` r
 # Calculate test error
@@ -530,19 +527,21 @@ gam_test_mse <- mean((gam_test_pred - y2)^2)
 gam_test_mse
 ```
 
-    ## [1] 409.4947
+    ## [1] 427.107
 
 ## Multivariate Adaptive Regression Splines (MARS)
 
 ``` r
 set.seed(2024)
 
-mars_grid <- expand.grid(degree = 1:3,
-                         nprune = 2:26)
+mars_grid <- expand.grid(degree = 1:5,
+                         nprune = 2:30)
+
 
 mars_fit <- train(x, y,
                   method = "earth",
                   tuneGrid = mars_grid,
+                  metric = "RMSE",
                   trControl = ctrl1)
 
 # Plot RMSE
@@ -557,30 +556,50 @@ mars_fit$bestTune
 ```
 
     ##    nprune degree
-    ## 42     18      2
+    ## 93      7      4
 
 ``` r
 coef(mars_fit$finalModel)
 ```
 
-    ##                   (Intercept)                   h(bmi-30.8) 
-    ##                 -134.95923527                  -24.91874630 
-    ##                   h(30.8-bmi)          h(bmi-30.8) * studyB 
-    ##                   19.93223441                   17.01245024 
-    ## h(height-159.5) * h(bmi-30.8) h(159.5-height) * h(bmi-30.8) 
-    ##                   -0.55722369                    2.28977653 
-    ##                   h(bmi-25.3)                       vaccine 
-    ##                    4.56922378                   -4.55632324 
-    ##      h(bmi-30.8) * h(ldl-104)      h(bmi-30.8) * h(104-ldl) 
-    ##                    0.14027416                    0.34957628 
-    ##  h(85.5-weight) * h(bmi-30.8)                        gender 
-    ##                   -2.59956833                   -3.11745328 
-    ##      h(158-height) * severity             severity * studyB 
-    ##                   10.68088528                   15.46411845 
-    ##      h(bmi-25.3) * h(139-sbp)              vaccine * studyB 
-    ##                   -0.06087514                   -4.12553822 
-    ##                   h(bmi-21.3)                   h(bmi-29.5) 
-    ##                   16.50474700                    5.80857644
+    ##                           (Intercept)                           h(30.3-bmi) 
+    ##                             22.435204                              3.574363 
+    ##                  h(bmi-30.3) * studyB                               vaccine 
+    ##                              9.782606                             -6.264022 
+    ##  h(164-height) * h(bmi-30.3) * studyB                           h(bmi-25.7) 
+    ##                              2.990501                              4.898496 
+    ## h(87.6-weight) * h(bmi-30.3) * studyB 
+    ##                             -2.640353
+
+``` r
+summary(mars_fit$finalModel)
+```
+
+    ## Call: earth(x=matrix[2400,17], y=c(33,44,33,27,6...), keepxy=TRUE, degree=4,
+    ##             nprune=7)
+    ## 
+    ##                                       coefficients
+    ## (Intercept)                              22.435204
+    ## vaccine                                  -6.264022
+    ## h(bmi-25.7)                               4.898496
+    ## h(30.3-bmi)                               3.574364
+    ## h(bmi-30.3) * studyB                      9.782606
+    ## h(164-height) * h(bmi-30.3) * studyB      2.990502
+    ## h(87.6-weight) * h(bmi-30.3) * studyB    -2.640353
+    ## 
+    ## Selected 7 of 22 terms, and 5 of 17 predictors (nprune=7)
+    ## Termination condition: Reached nk 35
+    ## Importance: bmi, studyB, height, weight, vaccine, age-unused, ...
+    ## Number of terms at each degree of interaction: 1 3 1 2
+    ## GCV 305.1695    RSS 722673.9    GRSq 0.3915679    RSq 0.3991527
+
+``` r
+mars_test_pred <- predict(gam_fit, newdata = x2)
+mars_test_mse <- mean((mars_test_pred - y2)^2)
+mars_test_mse
+```
+
+    ## [1] 427.107
 
 ## Model Comparing
 
@@ -609,36 +628,36 @@ summary(resamp)
     ## 
     ## MAE 
     ##                 Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
-    ## lm          12.65827 12.98201 13.14044 13.24961 13.40682 14.08860    0
-    ## lasso       12.58753 12.93753 13.07802 13.19703 13.36130 14.03338    0
-    ## ridge       12.43772 12.91646 13.44438 13.28629 13.64266 13.86450    0
-    ## elastic_net 12.39675 12.73068 12.87723 13.01278 13.19290 13.82902    0
-    ## pcr         12.65827 12.98201 13.14044 13.24961 13.40682 14.08860    0
-    ## pls         12.65860 12.98145 13.13910 13.24949 13.40785 14.08853    0
-    ## gam         12.02371 12.11518 12.64794 12.67120 13.11409 13.61163    0
-    ## mars        11.03567 11.44323 12.43141 12.11802 12.65317 12.97444    0
+    ## lm          11.74160 12.57542 13.05304 12.96649 13.35735 14.01804    0
+    ## lasso       11.68936 12.47988 12.99726 12.91362 13.29877 13.96370    0
+    ## ridge       11.61061 12.89322 13.00231 13.07056 13.44631 14.29571    0
+    ## elastic_net 11.54759 12.25975 12.84822 12.76980 13.15859 13.83584    0
+    ## pcr         11.74160 12.57542 13.05304 12.96649 13.35735 14.01804    0
+    ## pls         11.74160 12.57540 13.05304 12.96648 13.35735 14.01805    0
+    ## gam         11.18041 12.14532 12.58068 12.46836 12.96641 13.51204    0
+    ## mars        11.29074 11.69608 11.96643 12.04453 12.56542 12.82283    0
     ## 
     ## RMSE 
     ##                 Min.  1st Qu.   Median     Mean  3rd Qu.     Max. NA's
-    ## lm          17.41034 18.19047 19.31259 19.80930 20.28848 25.11340    0
-    ## lasso       17.33271 18.18750 19.28360 19.80825 20.34108 25.18673    0
-    ## ridge       17.10442 19.51358 19.91044 21.06982 22.74103 27.51605    0
-    ## elastic_net 17.05512 18.26359 19.21957 19.87933 20.66824 25.58520    0
-    ## pcr         17.41034 18.19047 19.31259 19.80930 20.28848 25.11340    0
-    ## pls         17.41074 18.18978 19.31360 19.80881 20.28669 25.11381    0
-    ## gam         16.90154 18.19722 18.38978 19.28520 20.10106 22.89854    0
-    ## mars        15.50036 15.93019 18.50061 18.00871 19.26472 21.62617    0
+    ## lm          16.73131 17.89516 19.21757 19.71575 20.50813 24.32138    0
+    ## lasso       16.59288 17.90516 19.18095 19.71227 20.52341 24.39038    0
+    ## ridge       15.36616 19.20411 19.54329 20.58662 21.68757 26.05950    0
+    ## elastic_net 16.10032 18.04364 19.10151 19.77650 20.66412 24.73699    0
+    ## pcr         16.73131 17.89516 19.21757 19.71575 20.50813 24.32138    0
+    ## pls         16.73129 17.89516 19.21756 19.71574 20.50813 24.32139    0
+    ## gam         15.93861 16.89042 18.91441 18.98713 20.21679 22.83180    0
+    ## mars        15.54017 17.25203 18.04581 18.46486 18.75092 22.31588    0
     ## 
     ## Rsquared 
     ##                   Min.   1st Qu.    Median      Mean   3rd Qu.      Max. NA's
-    ## lm          0.12788184 0.1698379 0.2354838 0.2410852 0.3227967 0.3823306    0
-    ## lasso       0.12780359 0.1702795 0.2337423 0.2407865 0.3225846 0.3814517    0
-    ## ridge       0.06822310 0.0994765 0.1278933 0.1421557 0.1819024 0.2515319    0
-    ## elastic_net 0.12562264 0.1682808 0.2220135 0.2360842 0.3168461 0.3723871    0
-    ## pcr         0.12788184 0.1698379 0.2354838 0.2410852 0.3227967 0.3823306    0
-    ## pls         0.12788804 0.1698055 0.2355930 0.2411219 0.3228657 0.3824693    0
-    ## gam         0.08785856 0.1920850 0.2634086 0.2999918 0.4191649 0.5086967    0
-    ## mars        0.10359889 0.2527592 0.3128814 0.3728295 0.5470816 0.6313411    0
+    ## lm          0.06611697 0.2019001 0.2268777 0.2122074 0.2473751 0.2819362    0
+    ## lasso       0.07046686 0.2000951 0.2272111 0.2117903 0.2465348 0.2796740    0
+    ## ridge       0.09486261 0.1145127 0.1348116 0.1368990 0.1477628 0.2011960    0
+    ## elastic_net 0.08959695 0.1870300 0.2235610 0.2059847 0.2411988 0.2652584    0
+    ## pcr         0.06611697 0.2019001 0.2268777 0.2122074 0.2473751 0.2819362    0
+    ## pls         0.06611802 0.2019003 0.2268774 0.2122076 0.2473758 0.2819355    0
+    ## gam         0.09606751 0.2020966 0.2670992 0.2781279 0.3666627 0.4376890    0
+    ## mars        0.04864786 0.2039051 0.3015203 0.3135288 0.3970823 0.6892535    0
 
 ``` r
 # visualization
