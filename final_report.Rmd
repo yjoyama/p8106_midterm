@@ -145,8 +145,17 @@ Figure 2 illustrates that study B, BMI, height, weight, and vaccination status h
 
 # Conclusions
 
+Our analysis using the Multivariate Adaptive Regression Splines (MARS) model has provided significant insights into factors influencing COVID-19 recovery times. Key findings include the substantial impact of vaccination, which significantly reduces recovery time, highlighting the critical role of immunization in managing COVID-19 outcomes. The model also reveals the nuanced effects of body mass index (BMI) on recovery, with distinct thresholds where recovery time increases, underscoring the importance of metabolic health in the COVID-19 recovery process.
+
+Furthermore, the interaction between BMI, study variables, and demographic factors such as height and weight, suggests a complex relationship affecting recovery time. These interactions emphasize the need for a tailored approach to treatment, considering the multifaceted nature of individual health profiles.
+
+In conclusion, our model analysis underscores the necessity of vaccination and the management of metabolic health in improving COVID-19 recovery times. It also highlights the importance of personalized healthcare strategies that account for the interplay of various factors affecting individual recovery trajectories. Future research should focus on understanding the mechanisms behind these associations, to develop more effective, targeted interventions for COVID-19 recovery. 
 
 # Additional Considerations
+
+In our work with the Multivariate Adaptive Regression Splines (MARS) model for predicting COVID-19 recovery times, we chose to include "study" as a predictor. This decision was based on recognizing that factors like socioeconomic status, geography, and demographics can greatly affect recovery outcomes. These factors vary from one study to another but weren't directly included in our datasets. Our analysis showed that the "study" variable significantly interacts with other variables, especially BMI, highlighting that the influence of certain predictors on recovery time can change depending on the study context. This finding underlines the importance of considering the "study" variable to accurately capture the diverse experiences of COVID-19 recovery.
+
+To deepen our understanding of these effects, a stratified analysis is suggested as a future step. Such an analysis would allow us to dissect how recovery dynamics change across distinct study conditions, providing a better understanding of the factors influencing recovery times. By segmenting data according to specific study characteristics, we can tailor our model to more precisely predict the COVID-19 recovery time. 
 
 
 
