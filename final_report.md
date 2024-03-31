@@ -41,11 +41,11 @@ Linear Model (LM) presupposes linearity, homoscedasticity, and absence of multic
 
 ## Selection of Tuning Parameters
 
-In predictive modeling, tuning parameters are crucial as they can significantly affect the model's performance. To select the best tuning parameters, Initially, we used a wide range and search pattern, we created a grid of potential models with different degrees and numbers of terms to prune, then used 10-fold cross-validation to select the optimal combination. After identifying promising ranges for the selected parameters where show the best cross-validation performance, we then searched parameter patterns within a narrower range and with more density by decreasing the step within each parameter sequence. For example, with the MARS model (Figure 2(a)), we started with a relatively large number of maximum terms in the initial grid search to capture potential model complexity. We then narrowed down the search space for the degree of interaction and number of terms based on cross-validation performance. The best tuning parameters given by the cross-validation is: `nprune = 7`, `degree = 4`.
+In predictive modeling, tuning parameters are crucial as they can significantly affect the model's performance. To select the best tuning parameters, Initially, we used a wide range and search pattern, we created a grid of potential models with degrees from 2 to 30 and numbers of terms to prune, then used 10-fold cross-validation to select the optimal combination. After identifying promising ranges for the selected parameters where show the best cross-validation performance, we then searched parameter patterns within a narrower range and with more density by decreasing the step within each parameter sequence. For example, with the MARS model (Figure 2(a)), we started with a relatively large number of maximum terms in the initial grid search to capture potential model complexity. We then narrowed down the search space for the degree of interaction and number of terms based on cross-validation performance. The best tuning parameters given by the cross-validation is: `nprune = 7`, `degree = 4`.
 
 ## Model Comparison
 
-After fitting all the models, we used the resamples function to compare their performance based on RMSE. The performance of all models was assessed through 10-fold cross-validation on the training set. Repeated cross-validation was not employed to avoid excessive computational cost. The results of the cross-validation are presented below:
+After fitting all the models, we used the resamples function to compare their performance based on RMSE. The performance of all models was assessed through 10-fold cross-validation on the training set. The results of the cross-validation are presented below:
 
 \begin{figure}[ht]
 \centering
@@ -55,7 +55,7 @@ After fitting all the models, we used the resamples function to compare their pe
 \caption{(a) MARS Model Tunning (b) Model Comparision}
 \end{figure}
 
-Figure 2(b) illustrates the distribution of Root Mean Square Error (RMSE) values across different predictive models used to estimate the time to recovery from COVID-19. The MARS model has the lowest median RMSE, suggesting that it is the best performing model in terms of prediction accuracy on the validation sets used during cross-validation. Moreover, there is a clear distinction between the group of models with the lowest RMSE values (MARS, GAM, Elastic Net) and the other models, indicating that incorporating non-linearity and regularization seems beneficial for this dataset.
+Figure 2(b) illustrates the distribution of Root Mean Square Error (RMSE) values across different predictive models used to estimate the time to recovery from COVID-19. We use earth package to fit the MARS model. The MARS model has the lowest median RMSE, suggesting that it is the best performing model in terms of prediction accuracy on the validation sets used during cross-validation. Moreover, there is a clear distinction between the group of models with the lowest RMSE values (MARS, GAM, Elastic Net) and the other models, indicating that incorporating non-linearity and regularization seems beneficial for this dataset.
 
 Conclusively, MARS emerges as the most accurate and consistent model for this dataset. This technique excels in model simplification and construction, utilizing spline functions of predictor variables to estimate complex nonlinear relationships, thereby offering flexibility in modeling the recovery time distribution of the COVID-19 dataset.
 
