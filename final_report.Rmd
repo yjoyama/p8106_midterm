@@ -140,7 +140,7 @@ All else being equal, if BMI is in the range (25.7, 30.3), the recovery time inc
 
 Figure 2 illustrates that study B, BMI, height, weight, and vaccination status have the non-zero importance value in the final model.  
 
-![Variance Importance Plot](./Rplot.png){width=50%, height=30%}  
+![Variance Importance Plot](./Rplot.png){width=50%, height=30%} 
 
 
 # Conclusions
