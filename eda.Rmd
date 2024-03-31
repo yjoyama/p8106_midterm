@@ -1,6 +1,6 @@
 ---
 title: "EDA"
-author: "Yuki Joyama"
+author: "Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)"
 date: "2024-03-20"
 output: github_document
 ---
@@ -108,9 +108,9 @@ x2 <- model.matrix(recovery_time~.,test)[, -1]
 y2 <- test$recovery_time
 
 featurePlot(x = x,  
-            y = y,               # Response variable
+            y = y,              
             plot = "scatter",
-            auto.key = list(columns = 3))  # This will add a legend if it's a factor
+            auto.key = list(columns = 3)) 
 
 ```
 ```{r}

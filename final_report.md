@@ -1,5 +1,5 @@
 ---
-title: "Final Report"
+title: "Analysis for Predicting COVID-19 Recovery Time"
 author: Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)
 header-includes:
     - \usepackage{setspace}\doublespacing

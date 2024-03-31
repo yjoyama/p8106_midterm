@@ -1,6 +1,6 @@
 EDA
 ================
-Yuki Joyama
+Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)
 2024-03-20
 
 ``` r
@@ -114,9 +114,9 @@ x2 <- model.matrix(recovery_time~.,test)[, -1]
 y2 <- test$recovery_time
 
 featurePlot(x = x,  
-            y = y,               # Response variable
+            y = y,              
             plot = "scatter",
-            auto.key = list(columns = 3))  # This will add a legend if it's a factor
+            auto.key = list(columns = 3)) 
 ```
 
 ![](eda_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
