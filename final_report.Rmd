@@ -53,8 +53,7 @@ summary(df_recov)
 The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time. The distribution of each variable is shown in Figure 1.
 
 Table 1: Baseline Characteristics
-
-![](./plots/Rplot03.png){width=50%, height=50%}  
+![](./plots/Rplot03.png){width=40%, height=40%}  
 
 \begin{figure}[ht]
 \centering
@@ -89,7 +88,7 @@ Table 1: Baseline Characteristics
 \caption{(a) Histogram of Continuous Variables (b) Bar Plot of Categorical Variables (c) Corrrelation Plot (d) Relationship Between Weight and BMI}
 \end{figure}
 
-The bar plots (b) indicate imbalances in categorical variables, such as more subjects of a particular gender, race, and a higher prevalence of non-smokers and those without hypertension or diabetes. The correlation matrix (c) illustrates degrees of association between variables; notably, weight has a positive correlation with BMI, and both are negatively correlated with recovery time. The scatter plot (d) confirms a strong positive linear relationship between weight and BMI.
+The bar plots (b) indicate imbalances in categorical variables, such as more subjects of a particular gender, race, and a higher prevalence of non-smokers and those without hypertension or diabetes. The correlation matrix (c) illustrates degrees of association between variables; notably, weight has a positive correlation with BMI, and both are negatively correlated with recovery time.The box plot (d) compares recovery times between groups A and B; both have similar medians, but B's wider range and outliers indicate more variability and longer recoveries for some people.
 
 # Model Training
 

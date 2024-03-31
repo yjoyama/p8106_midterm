@@ -114,10 +114,10 @@ featurePlot(x = x,
 
 ```
 ```{r}
-ggplot(data = df_recov, aes(x = bmi, y = weight)) + 
-  geom_point() +                                  
-  geom_smooth(method = "lm", se = FALSE) +        
-  labs(x = "BMI", y = "Weight (kg)", title = "Weight vs. BMI") +
+ggplot(data = df_recov, aes(x = study, y = recovery_time, fill = study)) +
+  geom_boxplot() +
+  labs(x = "Study Group", y = "Recovery Time",
+       title = "Relationship Between Study Group and Recovery Time") +
   theme_minimal()
 ```
 
