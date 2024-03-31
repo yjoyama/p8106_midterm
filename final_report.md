@@ -12,43 +12,9 @@ fontsize: 11pt
 ---
 
 
-```{r setup, include=FALSE}
-options(tinytex.verbose = TRUE)
 
-knitr::opts_chunk$set(
-  echo = FALSE,
-  message=FALSE,
-  warning=FALSE,
-  results = FALSE,
-  fig.align = "center")
 
-library(tidyverse)
-library(ggplot2)
-library(corrplot)
-library(gtsummary)
-library(flextable)
-library(rsample) 
-library(caret)
-library(tidymodels)
-library(plotmo)
-library(earth)
-library(vip)
-library(cowplot)
 
-# setup plot theme
-theme_set(
-  theme_bw() +
-    theme(legend.position = "top")
-  )
-```
-
-```{r dataprep}
-# read RData file
-df_recov <- get(load("./data/recovery.RData")) |> 
-  janitor::clean_names()
-
-summary(df_recov)
-```
 
 # Exploratory Analysis and Data Visualization
 The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time.
@@ -100,70 +66,25 @@ One of the strengths of MARS is its flexibility. It can handle various types of 
 
 
 # Results
-```{r mars, include=FALSE, echo=F, cache=T}
-# read RData file
-df_recov <- get(load("./data/recovery.RData")) |> 
-  janitor::clean_names()
 
-head(df_recov)
-
-# partition (training:test=80:20)
-set.seed(2024)
-data_split = initial_split(df_recov, prop = .80)
-# training data
-df_train = training(data_split) |> 
-  select(!id)
-# test data
-df_test = testing(data_split) |> 
-  select(!id)
-
-# set up 10-fold CV
-ctrl1 <- trainControl(
-  method = "cv",
-  number = 10
-)
-
-# MARS
-set.seed(2024)
-
-# fit mars model
-mars.fit <- train(
-  x = df_train[1:14],
-  y = df_train$recovery_time,
-  method = "earth",
-  tuneGrid = expand.grid(degree = 1:5, nprune = 2:30),
-  metric = "RMSE",
-  trControl = ctrl1
-)
-```
 
 Our final MARS model is as follows:   
 
-$\hat{y}$ = `r round(coef(mars.fit$finalModel)[1], 3)` + `r round(coef(mars.fit$finalModel)[2], 3)` $\times$ h(30.3 - bmi) + `r round(coef(mars.fit$finalModel)[3], 3)` $\times$ h(bmi - 30.3) * studyB + `r round(coef(mars.fit$finalModel)[4], 3)` $\times$ vaccine + `r round(coef(mars.fit$finalModel)[5], 3)` $\times$ h(164 - height) * h(bmi - 30.3) * studyB + `r round(coef(mars.fit$finalModel)[6], 3)` $\times$ h(bmi - 25.7) + `r round(coef(mars.fit$finalModel)[7], 3)` $\times$ h(87.6 - weight) * h(bmi - 30.3) * studyB, where $h(.)$ is a hinge function   
+$\hat{y}$ = 22.435 + 3.574 $\times$ h(30.3 - bmi) + 9.783 $\times$ h(bmi - 30.3) * studyB + -6.264 $\times$ vaccine + 2.991 $\times$ h(164 - height) * h(bmi - 30.3) * studyB + 4.898 $\times$ h(bmi - 25.7) + -2.64 $\times$ h(87.6 - weight) * h(bmi - 30.3) * studyB, where $h(.)$ is a hinge function   
 
 Table 2: Summary of the MARS model
-```{r table2, echo=FALSE, message=FALSE, warnings=FALSE, results='asis'}
-require(pander)
-panderOptions('table.split.table', Inf)
 
-my.data <- "
-Equation        | Coefficients        
-(Intercept)      | 22.435204 
-vaccine      | -6.264022   
-h(bmi-25.7) | 4.898496    
-h(30.3-bmi)   | 3.574364   
-h(bmi-30.3) * studyB| 9.782606
-h(164-height) * h(bmi-30.3) * studyB| 2.990502
-h(87.6-weight) * h(bmi-30.3) * studyB| -2.640353
-"
-df <- read.delim(textConnection(my.data), header=FALSE, sep="|", strip.white=TRUE, stringsAsFactors=FALSE)
-names(df) <- unname(as.list(df[1,])) # put headers on
-df <- df[-1,] # remove first row
-row.names(df)<-NULL
-pander(df, style = 'rmarkdown')
-```
+|               Equation                | Coefficients |
+|:-------------------------------------:|:------------:|
+|              (Intercept)              |  22.435204   |
+|                vaccine                |  -6.264022   |
+|              h(bmi-25.7)              |   4.898496   |
+|              h(30.3-bmi)              |   3.574364   |
+|         h(bmi-30.3) * studyB          |   9.782606   |
+| h(164-height) * h(bmi-30.3) * studyB  |   2.990502   |
+| h(87.6-weight) * h(bmi-30.3) * studyB |  -2.640353   |
 
-The summary of the final MARS model is shown in Table 2. Vaccinated people have `r -round(coef(mars.fit$finalModel)[4], 3)` shorter recovery time (days) compared to non-vaccinated ones, holding other variables constant. The model shows that BMI has two knots (25.7 and 30.3). This can be expressed as follows:     
+The summary of the final MARS model is shown in Table 2. Vaccinated people have 6.264 shorter recovery time (days) compared to non-vaccinated ones, holding other variables constant. The model shows that BMI has two knots (25.7 and 30.3). This can be expressed as follows:     
 
 $$
 \text{Recovery time} = 
@@ -174,7 +95,7 @@ $$
 \end{cases}
 $$  
 
-All else being equal, if BMI is in the range (25.7, 30.3), the recovery time increases by `r round(coef(mars.fit$finalModel)[6], 3)` days for every unit increase in BMI; for those with BMI larger than 30.3, the recovery time increases by `r round(coef(mars.fit$finalModel)[2], 3)` days for every unit increase in BMI. The model also tells us that there are interactions between h(bmi - 30.3) and studyB; h(164 - height), h(bmi - 30.3) and studyB; h(87.6 - weight), h(bmi - 30.3) and studyB. We will discuss this in the later section ("Additional Considerations"). Given the results, we can infer that the followings are the important risk factors for longer recovery time:  
+All else being equal, if BMI is in the range (25.7, 30.3), the recovery time increases by 4.898 days for every unit increase in BMI; for those with BMI larger than 30.3, the recovery time increases by 3.574 days for every unit increase in BMI. The model also tells us that there are interactions between h(bmi - 30.3) and studyB; h(164 - height), h(bmi - 30.3) and studyB; h(87.6 - weight), h(bmi - 30.3) and studyB. We will discuss this in the later section ("Additional Considerations"). Given the results, we can infer that the followings are the important risk factors for longer recovery time:  
 
 * No history of vaccination  
 * BMI over 25.7  
