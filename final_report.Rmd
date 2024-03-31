@@ -2,7 +2,7 @@
 title: "Final Report"
 author: Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)
 header-includes:
-    - \usepackage{setspace}\doublespacing
+    - \usepackage{setspace}\onehalfspacing
     - \usepackage{geometry}
     - \geometry{left=20mm, right=20mm, top=20mm, bottom=20mm}
 output: 
@@ -54,7 +54,7 @@ The information of COVID-19 recovery time and other variables (id, gender, race,
 
 Table 1: Baseline Characteristics
 
-![](./plots/Rplot03.png){width=40%, height=40%}  
+![](./plots/Rplot03.png){width=40%, height=40%} 
 
 \begin{figure}[ht]
 \centering
