@@ -57,7 +57,7 @@ Table 1: Baseline Characteristics
 \caption{(a) Histogram of Continuous Variables (b) Bar Plot of Categorical Variables (c) Corrrelation Plot (d) Relationship Between Weight and BMI}
 \end{figure}
 
-Figure 1(a) indicates recovery time is right skewed, meaning most recover quickly while few take longer to recover. Figure 1(b) indicate imbalances in categorical variables, such as more subjects of a particular race, and a higher prevalence of non-smokers and those without diabetes and lower disease severity. The correlation matrix Figure 1(c) illustrates degrees of association between variables; notably, weight has a positive correlation with BMI, and both are negatively correlated with recovery time.The box plot Figure 1(d) compares recovery times between groups A and B; both have similar medians, but B's wider range and outliers indicate more variability and longer recoveries for some people.
+Figure 1(a) shows recovery time is right-skewed, with most recovering quickly but some taking longer. Figure 1(b) highlights imbalances in demographics, with more non-smokers and fewer individuals with diabetes or severe COVID-19. In Figure 1(c), weight and BMI show a positive correlation, so do hypertension and SBP.However, height and BMI are negatively correlated. Figure 1(d) shows that although groups A and B have similar median recovery times, group B has more variability and longer recovery times for some cases.
 
 # Model Training
 
