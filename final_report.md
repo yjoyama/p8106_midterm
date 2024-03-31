@@ -34,9 +34,9 @@ Table 1: Baseline Characteristics
 
 ## Model selection
 
-After cleansing and preprocessing the dataset, we divided it into training and testing subsets using an 80-20 split. Subsequently, we explored a diverse array of regression models to forecast COVID-19 recovery times. These models are Linear Model, Lasso Regression, Elastic Net, Ridge Regression, Partial Least Squares (PLS), Principal Component Regression (PCR),  Generalized Additive Models (GAM), and Multivariate Adaptive Regression Splines (MARS). Utilizing the caret package's train function, each model underwent training on the training dataset, incorporating 10-fold cross-validation to enhance model reliability and performance assessment.
+After cleansing and preprocessing the dataset, we divided it into training and testing subsets using an 80-20 split. Subsequently, we explored a diverse array of regression models to forecast COVID-19 recovery times. These models are Linear Model, Lasso Regression, Elastic Net, Ridge Regression, Partial Least Squares (PLS), Principal Component Regression (PCR), Generalized Additive Models (GAM), and Multivariate Adaptive Regression Splines (MARS). Utilizing the caret package's train function, each model underwent training on the training dataset, incorporating 10-fold cross-validation to enhance model reliability and performance assessment.
 
-Lasso Regression shares these assumptions. Ridge Regression counters multicollinearity through a penalty term. Elastic Net, a hybrid of Lasso and Ridge penalties, assumes that their combined regularization improves model performance. PCR anticipates that principal components explain most predictor variance and exhibit a linear relationship with the target variable. PLS projects predictors onto new components that linearly correlate with the response. GAM allows for non-linear relationships between predictors and response, enhancing model flexibility. Lastly, MARS employs piecewise linear regressions to accommodate non-linear predictor-outcome relationships, utilizing splines for model construction.
+Because MARS employs piecewise linear regressions to accommodate non-linear predictor-outcome relationships, utilizing splines for model construction, and the MARS model has the lowest median RMSE, we choose MARS as our final model.
 
 ## Selection of Tuning Parameters
 
