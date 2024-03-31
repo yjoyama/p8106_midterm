@@ -15,7 +15,6 @@ fontsize: 11pt
 
 
 
-
 # Exploratory Analysis and Data Visualization
 The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time.
 
@@ -36,39 +35,31 @@ Table 1: Baseline Characteristics
 
 ## Model selection
 
-After cleanning and preprocessing the dataset, we partitioned it into an 80-20 training-test split. Then, We employed a variety of regression models to predict the time to recovery from COVID-19. The models include LM, Ridge, PLS, PCR, Lasso, Elastic Net, MARS, and GAM. Each model was trained using the train function from the caret package on the training data with 10-fold cross-validation.
+After cleansing and preprocessing the dataset, we divided it into training and testing subsets using an 80-20 split. Subsequently, we explored a diverse array of regression models to forecast COVID-19 recovery times. These models are Linear Model, Lasso Regression, Elastic Net, Ridge Regression, Partial Least Squares (PLS), Principal Component Regression (PCR),  Generalized Additive Models (GAM), and Multivariate Adaptive Regression Splines (MARS). Utilizing the caret package's train function, each model underwent training on the training dataset, incorporating 10-fold cross-validation to enhance model reliability and performance assessment.
 
-LM assumes linearity, homoscedasticity, no multicollinearity, and normal distribution of residuals. Lasso has the same assumption as LM. Elastic Net is a linear regression model that combines Lasso and Ridge regularization penalties, it assumes that a balance of Lasso and Ridge penalties will produce a better model.Ridge regression sssumes multicollinearity in the data and attempts to mitigate its effects by introducing a penalty term. Principal Component Regression assumes that the principal components capture most of the variance in the predictors and that these components have a linear relationship with the outcome. Partial Least Squares assumes that the new components created from the predictors will have a linear relationship with the outcome. Gam assumes that the data can be better modeled by allowing non-linear relationships between predictors and the response. MARS is a non-parametric regression method that builds flexible models by fitting piecewise linear regressions, it asssumes that the relationships between the predictors and the outcome can be modeled with splines, which are piecewise polynomials joined at knots.
+Linear Model (LM) presupposes linearity, homoscedasticity, and absence of multicollinearity. Lasso Regression shares these assumptions. Ridge Regression counters multicollinearity through a penalty term. Elastic Net, a hybrid of Lasso and Ridge penalties, assumes that their combined regularization improves model performance. PCR anticipates that principal components explain most predictor variance and exhibit a linear relationship with the target variable. PLS projects predictors onto new components that linearly correlate with the response. GAM allows for non-linear relationships between predictors and response, enhancing model flexibility. Lastly, MARS employs piecewise linear regressions to accommodate non-linear predictor-outcome relationships, utilizing splines for model construction.
 
 ## Selection of Tuning Parameters
 
-In predictive modeling, tuning parameters are crucial as they can significantly affect the model's performance. For our final analysis, we employed a meticulous process to identify the optimal tuning parameters for each model, aiming to strike a delicate balance between bias and variance, ultimately to improve prediction accuracy.
-
-To select the best tuning parameters, Initially, we used a wide range and search pattern, we created a grid of potential models with different degrees and numbers of terms to prune, then used 10-fold cross-validation to select the optimal combination. After identifying promising ranges for the selected parameters where show the best cross-validation performance, we then searched parameter patterns within a narrower range and with more density by decreasing the step within each parameter sequence. For example, with the MARS model, we started with a relatively large number of maximum terms in the initial grid search to capture potential model complexity. We then narrowed down the search space for the degree of interaction and number of terms based on cross-validation performance. The best tuning parameters given by the cross-validation is: `nprune = 7`, `degree = 4`.
+In predictive modeling, tuning parameters are crucial as they can significantly affect the model's performance. To select the best tuning parameters, Initially, we used a wide range and search pattern, we created a grid of potential models with different degrees and numbers of terms to prune, then used 10-fold cross-validation to select the optimal combination. After identifying promising ranges for the selected parameters where show the best cross-validation performance, we then searched parameter patterns within a narrower range and with more density by decreasing the step within each parameter sequence. For example, with the MARS model (Figure 2(a)), we started with a relatively large number of maximum terms in the initial grid search to capture potential model complexity. We then narrowed down the search space for the degree of interaction and number of terms based on cross-validation performance. The best tuning parameters given by the cross-validation is: `nprune = 7`, `degree = 4`.
 
 ## Model Comparison
 
-After fitting all the models, we used the resamples function to compare their performance based on RMSE. The performance of all models was assessed through 10-fold cross-validation on the training set. Repeated cross-validation was not employed to avoid excessive computational cost. The results of the cross-validation are presented below
-
+After fitting all the models, we used the resamples function to compare their performance based on RMSE. The performance of all models was assessed through 10-fold cross-validation on the training set. Repeated cross-validation was not employed to avoid excessive computational cost. The results of the cross-validation are presented below:
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.45\textwidth]{./plots/modelcomp.png}
-\hspace{0.1cm} % Adds space between the two figures
 \includegraphics[width=0.5\textwidth]{./plots/mars.png}
-\caption{(a) Model Comparision (b) Model Tunning}
+\hspace{0.1cm} % Adds space between the two figures
+\includegraphics[width=0.45\textwidth]{./plots/modelcomp.png}
+\caption{(a) MARS Model Tunning (b) Model Comparision}
 \end{figure}
 
-This box plot illustrates the distribution of Root Mean Square Error (RMSE) values across different predictive models used to estimate the time to recovery from COVID-19. The MARS model has the lowest median RMSE, suggesting that it is the best performing model in terms of prediction accuracy on the validation sets used during cross-validation. Moreover, there is a clear distinction between the group of models with the lowest RMSE values (MARS, GAM, Elastic Net) and the other models, indicating that incorporating non-linearity and regularization seems beneficial for this dataset.
+Figure 2(b) illustrates the distribution of Root Mean Square Error (RMSE) values across different predictive models used to estimate the time to recovery from COVID-19. The MARS model has the lowest median RMSE, suggesting that it is the best performing model in terms of prediction accuracy on the validation sets used during cross-validation. Moreover, there is a clear distinction between the group of models with the lowest RMSE values (MARS, GAM, Elastic Net) and the other models, indicating that incorporating non-linearity and regularization seems beneficial for this dataset.
 
-In summary, based on this plot, MARS offers the best balance between accuracy and consistency for the given dataset. However, it's important to consider other factors such as the complexity of the model, interpretability, and computational efficiency when making a final selection for practical application.
+Conclusively, MARS emerges as the most accurate and consistent model for this dataset. This technique excels in model simplification and construction, utilizing spline functions of predictor variables to estimate complex nonlinear relationships, thereby offering flexibility in modeling the recovery time distribution of the COVID-19 dataset.
 
-## Why choose MARS
-
-Multivariate adaptive regression splines is an effective technique for simplifying models and constructing them. It is a nonparametric, multivariate regression method that can estimate complex nonlinear relations by a series of spline functions of the predictor variables, which makes it flexible in modeling the shape of the recovery time distribution in the COVID-19 dataset.
-
-One of the strengths of MARS is its flexibility. It can handle various types of predictor variables, from continuous to categorical, and is adept at managing a high number of them. Its nonparametric nature is especially beneficial as it operates without presumptions about how the predictor variables are distributed. 
-
+MARS's strength lies in its adaptability, capable of handling both continuous and categorical predictor variables, even in large numbers. Its nonparametric approach, free from predefined assumptions on the distribution of predictor variables, further underscores its utility in complex predictive scenarios. 
 
 # Results
 
@@ -109,7 +100,12 @@ All else being equal, if BMI is in the range (25.7, 30.3), the recovery time inc
 
 Figure 4 illustrates that study B, BMI, height, weight, and vaccination status have the non-zero importance value in the final model.  
 
-![Variance Importance Plot](./plots/Rplot.png){height=20%}  
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth, height=0.2\textheight, keepaspectratio=false]{./plots/Rplot.png}
+    \caption{Variance Importance Plot}
+    \label{fig:varianceimportance}
+\end{figure}
 
 
 # Conclusions
