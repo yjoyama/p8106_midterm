@@ -32,8 +32,6 @@ Table 1: Baseline Characteristics
 \end{figure}
 
 
-![Correlation Plot of Key Variables](./plots/Rplot07.png){width=30%, height=30%}  
-
 # Model Training
 
 ## Model selection
@@ -52,7 +50,14 @@ To select the best tuning parameters, Initially, we used a wide range and search
 
 After fitting all the models, we used the resamples function to compare their performance based on RMSE. The performance of all models was assessed through 10-fold cross-validation on the training set. Repeated cross-validation was not employed to avoid excessive computational cost. The results of the cross-validation are presented below
 
-![Comparison of Model RMSE Values](./plots/modelcomp.png){width=25%, height=25%} 
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.45\textwidth]{./plots/modelcomp.png}
+\hspace{0.1cm} % Adds space between the two figures
+\includegraphics[width=0.5\textwidth]{./plots/mars.png}
+\caption{(a) Model Comparision (b) Model Tunning}
+\end{figure}
 
 This box plot illustrates the distribution of Root Mean Square Error (RMSE) values across different predictive models used to estimate the time to recovery from COVID-19. The MARS model has the lowest median RMSE, suggesting that it is the best performing model in terms of prediction accuracy on the validation sets used during cross-validation. Moreover, there is a clear distinction between the group of models with the lowest RMSE values (MARS, GAM, Elastic Net) and the other models, indicating that incorporating non-linearity and regularization seems beneficial for this dataset.
 
@@ -97,14 +102,14 @@ $$
 
 All else being equal, if BMI is in the range (25.7, 30.3), the recovery time increases by 4.898 days for every unit increase in BMI; for those with BMI larger than 30.3, the recovery time increases by 3.574 days for every unit increase in BMI. The model also tells us that there are interactions between h(bmi - 30.3) and studyB; h(164 - height), h(bmi - 30.3) and studyB; h(87.6 - weight), h(bmi - 30.3) and studyB. We will discuss this in the later section ("Additional Considerations"). Given the results, we can infer that the followings are the important risk factors for longer recovery time:  
 
-* No history of vaccination  
-* BMI over 25.7  
-* BMI over 30.3 in Study B  
-* Height under 164 cm and BMI over 30.3 in Study B  
+\text{*} No history of vaccination \
+\text{*} BMI over 25.7 \
+\text{*} BMI over 30.3 in Study B \
+\text{*} Height under 164 cm and BMI over 30.3 in Study B  
 
 Figure 4 illustrates that study B, BMI, height, weight, and vaccination status have the non-zero importance value in the final model.  
 
-![Variance Importance Plot](./plots/Rplot.png){width=50%, height=30%}  
+![Variance Importance Plot](./plots/Rplot.png){height=20%}  
 
 
 # Conclusions
