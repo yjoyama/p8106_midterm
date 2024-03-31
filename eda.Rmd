@@ -14,6 +14,12 @@ library(corrplot)
 library(gtsummary)
 library(flextable)
 library(RColorBrewer)
+library(rsample) 
+library(caret)
+library(tidymodels)
+library(plotmo)
+library(earth)
+library(vip)
 
 # setup plot theme
 theme_set(
@@ -86,6 +92,33 @@ barplot(table(cate_recov$severity), main = "Severity", ylab = "Count", col = col
 barplot(table(cate_recov$study), main = "Study", ylab = "Count", col = colors[8])
 
 
+```
+```{r}
+data_split = initial_split(df_recov, prop = .80)
+train = training(data_split) |>
+select( -id)
+test = testing(data_split) |>
+select( -id)
+
+# Training data
+x = model.matrix(recovery_time~.,train)[, -1]
+y = train$recovery_time
+# Testing data
+x2 <- model.matrix(recovery_time~.,test)[, -1]
+y2 <- test$recovery_time
+
+featurePlot(x = x,  
+            y = y,               # Response variable
+            plot = "scatter",
+            auto.key = list(columns = 3))  # This will add a legend if it's a factor
+
+```
+```{r}
+ggplot(data = df_recov, aes(x = bmi, y = weight)) + 
+  geom_point() +                                  
+  geom_smooth(method = "lm", se = FALSE) +        
+  labs(x = "BMI", y = "Weight (kg)", title = "Weight vs. BMI") +
+  theme_minimal()
 ```
 
 # Correlation

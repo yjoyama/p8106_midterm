@@ -58,11 +58,38 @@ Table 1: Baseline Characteristics
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.45\textwidth]{./plots/Rplot04.png}
-\hspace{0.5cm} % Adds space between the two figures
-\includegraphics[width=0.45\textwidth]{./plots/Rplot06.png}
-\caption{(a) Histogram of Continuous Variables (b) Bar Plot of Categorical Variables}
+% First Row
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=\linewidth]{./plots/Rplot04.png}
+  \centering
+  (a)
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=\linewidth]{./plots/Rplot06.png}
+  \centering
+  (b)
+\end{minipage}
+
+\vspace{1cm} % Adds vertical space between the rows of figures
+
+% Second Row
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=\linewidth]{./plots/Rplot07.png}
+  \centering
+  (c)
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=\linewidth]{./plots/Rplot08.png}
+  \centering
+  (d)
+\end{minipage}
+
+\caption{(a) Histogram of Continuous Variables (b) Bar Plot of Categorical Variables (c) Corrrelation Plot (d) Relationship Between Weight and BMI}
 \end{figure}
+
+The bar plots (b) indicate imbalances in categorical variables, such as more subjects of a particular gender, race, and a higher prevalence of non-smokers and those without hypertension or diabetes. The correlation matrix (c) illustrates degrees of association between variables; notably, weight has a positive correlation with BMI, and both are negatively correlated with recovery time. The scatter plot (d) confirms a strong positive linear relationship between weight and BMI.
 
 # Model Training
 
