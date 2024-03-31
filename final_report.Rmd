@@ -50,22 +50,23 @@ summary(df_recov)
 ```
 
 # Exploratory Analysis and Data Visualization
-The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time. The distribution of each variable is shown in Figure 1.
+The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time. 
 
 Table 1: Baseline Characteristics
+
 ![](./plots/Rplot03.png){width=40%, height=40%}  
 
 \begin{figure}[ht]
 \centering
 % First Row
 \begin{minipage}{0.45\textwidth}
-  \includegraphics[width=\linewidth]{./plots/Rplot04.png}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot04.png}
   \centering
   (a)
 \end{minipage}
 \hspace{0.5cm}
 \begin{minipage}{0.45\textwidth}
-  \includegraphics[width=\linewidth]{./plots/Rplot06.png}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot06.png}
   \centering
   (b)
 \end{minipage}
@@ -74,13 +75,13 @@ Table 1: Baseline Characteristics
 
 % Second Row
 \begin{minipage}{0.45\textwidth}
-  \includegraphics[width=\linewidth]{./plots/Rplot07.png}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot07.png}
   \centering
   (c)
 \end{minipage}
 \hspace{0.5cm}
 \begin{minipage}{0.45\textwidth}
-  \includegraphics[width=\linewidth]{./plots/Rplot08.png}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot08.png}
   \centering
   (d)
 \end{minipage}
@@ -88,7 +89,7 @@ Table 1: Baseline Characteristics
 \caption{(a) Histogram of Continuous Variables (b) Bar Plot of Categorical Variables (c) Corrrelation Plot (d) Relationship Between Weight and BMI}
 \end{figure}
 
-The bar plots (b) indicate imbalances in categorical variables, such as more subjects of a particular gender, race, and a higher prevalence of non-smokers and those without hypertension or diabetes. The correlation matrix (c) illustrates degrees of association between variables; notably, weight has a positive correlation with BMI, and both are negatively correlated with recovery time.The box plot (d) compares recovery times between groups A and B; both have similar medians, but B's wider range and outliers indicate more variability and longer recoveries for some people.
+Figure 1(a) indicates recovery time is right skewed, meaning most recover quickly while few take longer to recover. Figure 1(b) indicate imbalances in categorical variables, such as more subjects of a particular race, and a higher prevalence of non-smokers and those without diabetes and lower disease severity. The correlation matrix Figure 1(c) illustrates degrees of association between variables; notably, weight has a positive correlation with BMI, and both are negatively correlated with recovery time.The box plot Figure 1(d) compares recovery times between groups A and B; both have similar medians, but B's wider range and outliers indicate more variability and longer recoveries for some people.
 
 # Model Training
 
@@ -226,7 +227,7 @@ In conclusion, our model analysis underscores the necessity of vaccination and t
 
 In our work with the Multivariate Adaptive Regression Splines (MARS) model for predicting COVID-19 recovery times, we chose to include "study" as a predictor. This decision was based on recognizing that factors like socioeconomic status, geography, and demographics can greatly affect recovery outcomes. These factors vary from one study to another but weren't directly included in our datasets. Our analysis showed that the "study" variable significantly interacts with other variables, especially BMI, highlighting that the influence of certain predictors on recovery time can change depending on the study context. This finding underlines the importance of considering the "study" variable to accurately capture the diverse experiences of COVID-19 recovery.
 
-To deepen our understanding of these effects, a stratified analysis is suggested as a future step. Such an analysis would allow us to dissect how recovery dynamics change across distinct study conditions, providing a better understanding of the factors influencing recovery times. By segmenting data according to specific study characteristics, we can tailor our model to more precisely predict the COVID-19 recovery time. 
+To deepen our understanding of these effects, a stratified analysis is suggested as a future step. This analysis would allow us to dissect how recovery dynamics change across distinct study conditions, providing a better understanding of the factors influencing recovery times. By segmenting data according to specific study characteristics, we can tailor our model to more precisely predict the COVID-19 recovery time. 
 
 
 
