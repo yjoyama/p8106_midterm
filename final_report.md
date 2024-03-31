@@ -16,7 +16,7 @@ fontsize: 11pt
 
 
 # Exploratory Analysis and Data Visualization
-The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time.The distribution of each variable is shown in Figure 1.
+The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time. The distribution of each variable is shown in Figure 1.
 
 Table 1: Baseline Characteristics
 
@@ -54,7 +54,7 @@ Conclusively, MARS emerges as the most accurate and consistent model for this da
 
 MARS's strength lies in its adaptability, capable of handling both continuous and categorical predictor variables, even in large numbers. Its nonparametric approach, free from predefined assumptions on the distribution of predictor variables, further underscores its utility in complex predictive scenarios. 
 
-## Model selection
+## Model Selection
 
 After cleansing and preprocessing the dataset, we divided it into training and testing subsets using an 80-20 split. Subsequently, we explored a diverse array of regression models to forecast COVID-19 recovery times. These models are Linear Model, Lasso Regression, Elastic Net, Ridge Regression, Partial Least Squares (PLS), Principal Component Regression (PCR), Generalized Additive Models (GAM), and Multivariate Adaptive Regression Splines (MARS). Utilizing the caret package's train function, each model underwent training on the training dataset, incorporating 10-fold cross-validation to enhance model reliability and performance assessment.
 
