@@ -2,7 +2,7 @@
 title: "Final Report"
 author: Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)
 header-includes:
-    - \usepackage{setspace}\onehalfspacing
+    - \usepackage{setspace}\doublespacing
     - \usepackage{geometry}
     - \geometry{left=20mm, right=20mm, top=20mm, bottom=20mm}
 output: 
@@ -19,8 +19,10 @@ fontsize: 11pt
 The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time. 
 
 Table 1: Baseline Characteristics
-
-![](./plots/Rplot03.png){width=40%, height=40%} 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{./plots/Rplot03.png}
+\end{figure}
 
 \begin{figure}[ht]
 \centering
@@ -37,7 +39,7 @@ Table 1: Baseline Characteristics
   (b)
 \end{minipage}
 
-\vspace{1cm} % Adds vertical space between the rows of figures
+\vspace{1cm}
 
 % Second Row
 \begin{minipage}{0.45\textwidth}
