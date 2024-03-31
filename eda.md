@@ -54,18 +54,21 @@ conti_recov = df_recov |>
 #library(Hmisc)
 #hist.data.frame(conti_recov)
 
-par(mfrow = c(2, 4),  # Layout: 2 rows, 2 columns
+par(mfrow = c(2, 4),  # Layout: 2 rows, 4 columns
     oma = c(2, 2, 3, 1),  # Outer margins
     mar = c(4, 4, 2, 1),  # Inner margins
     mgp = c(2, 1, 0))     # Margins for labels and title
 
-hist(conti_recov$age, main = "Age", xlab = "Year", ylab = "Frequency")
-hist(conti_recov$height, main = "Height", xlab = "cm", ylab = "Frequency")
-hist(conti_recov$weight, main = "Weight", xlab = "kl", ylab = "Frequency")
-hist(conti_recov$bmi, main = "BMI", xlab = " ", ylab = "Frequency")
-hist(conti_recov$sbp, main = "SBP", xlab = "mm/Hg", ylab = "Frequency")
-hist(conti_recov$ldl, main = "LDL", xlab = "mg/dL", ylab = "Frequency")
-hist(conti_recov$recovery_time, main = "Recovery Time", xlab = "Day", ylab = "Frequency")
+colors <- brewer.pal(8, "YlGnBu")
+
+# Plot each histogram using a color from the Set3 palette
+hist(conti_recov$age, main = "Age", xlab = "Year", ylab = "Frequency", col = colors[1])
+hist(conti_recov$height, main = "Height", xlab = "cm", ylab = "Frequency", col = colors[2])
+hist(conti_recov$weight, main = "Weight", xlab = "kg", ylab = "Frequency", col = colors[3])
+hist(conti_recov$bmi, main = "BMI", xlab = " ", ylab = "Frequency", col = colors[4])
+hist(conti_recov$sbp, main = "SBP", xlab = "mm/Hg", ylab = "Frequency", col = colors[5])
+hist(conti_recov$ldl, main = "LDL", xlab = "mg/dL", ylab = "Frequency", col = colors[6])
+hist(conti_recov$recovery_time, main = "Recovery Time", xlab = "Day", ylab = "Frequency", col = colors[7])
 ```
 
 ![](eda_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
@@ -84,14 +87,14 @@ par(mfrow = c(2, 4),  # Layout: 2 rows, 4 columns
     mar = c(4, 4, 2, 1),  # Inner margins
     mgp = c(2, 1, 0))     # Margins for labels and title
 
-barplot(table(cate_recov$gender), main = "Gender", ylab = "Count")
-barplot(table(cate_recov$race), main = "Race", ylab = "Count")
-barplot(table(cate_recov$smoking), main = "Smoking", ylab = "Count")
-barplot(table(cate_recov$hypertension), main = "Hypertension", ylab = "Count")
-barplot(table(cate_recov$diabetes), main = "Diabetes", ylab = "Count")
-barplot(table(cate_recov$vaccine), main = "Vaccine", ylab = "Count")
-barplot(table(cate_recov$severity), main = "Severity", ylab = "Count")
-barplot(table(cate_recov$study), main = "Study", ylab = "Count")
+barplot(table(cate_recov$gender), main = "Gender", ylab = "Count", , col = colors[1])
+barplot(table(cate_recov$race), main = "Race", ylab = "Count", , col = colors[2])
+barplot(table(cate_recov$smoking), main = "Smoking", ylab = "Count", col = colors[3])
+barplot(table(cate_recov$hypertension), main = "Hypertension", ylab = "Count", col = colors[4])
+barplot(table(cate_recov$diabetes), main = "Diabetes", ylab = "Count", col = colors[5])
+barplot(table(cate_recov$vaccine), main = "Vaccine", ylab = "Count", col = colors[6])
+barplot(table(cate_recov$severity), main = "Severity", ylab = "Count", col = colors[7])
+barplot(table(cate_recov$study), main = "Study", ylab = "Count", col = colors[8])
 ```
 
 ![](eda_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
@@ -179,7 +182,7 @@ table_1 = df_recov |>
       recovery_time ~ "Recovery time"
     )
   ) |> 
-  modify_caption("Baseline Characteristics") |> 
+  # modify_caption("Table 1: Baseline Characteristics") |> 
   as_flex_table() |> 
   line_spacing(space = 0, part = "body")
 
