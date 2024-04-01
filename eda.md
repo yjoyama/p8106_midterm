@@ -1,6 +1,6 @@
 EDA
 ================
-Yuki Joyama
+Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)
 2024-03-20
 
 ``` r
@@ -99,6 +99,38 @@ barplot(table(cate_recov$study), main = "Study", ylab = "Count", col = colors[8]
 
 ![](eda_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
+``` r
+data_split = initial_split(df_recov, prop = .80)
+train = training(data_split) |>
+select( -id)
+test = testing(data_split) |>
+select( -id)
+
+# Training data
+x = model.matrix(recovery_time~.,train)[, -1]
+y = train$recovery_time
+# Testing data
+x2 <- model.matrix(recovery_time~.,test)[, -1]
+y2 <- test$recovery_time
+
+featurePlot(x = x,  
+            y = y,              
+            plot = "scatter",
+            auto.key = list(columns = 3)) 
+```
+
+![](eda_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+``` r
+ggplot(data = df_recov, aes(x = study, y = recovery_time, fill = study)) +
+  geom_boxplot() +
+  labs(x = "Study Group", y = "Recovery Time",
+       title = "Relationship Between Study Group and Recovery Time") +
+  theme_minimal()
+```
+
+![](eda_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
 # Correlation
 
 ``` r
@@ -116,7 +148,7 @@ correlation_matrix <- cor(numeric_df_recov)
 corrplot(correlation_matrix, method = "circle", type = "upper", order = "hclust")
 ```
 
-![](eda_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](eda_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 # Table 1
 
@@ -189,4 +221,4 @@ table_1 = df_recov |>
 table_1
 ```
 
-<img src="eda_files/figure-gfm/unnamed-chunk-4-1.png" width="964" />
+<img src="eda_files/figure-gfm/unnamed-chunk-6-1.png" width="964" />

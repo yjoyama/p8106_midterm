@@ -1,5 +1,5 @@
 ---
-title: "Final Report"
+title: "Analysis for Predicting COVID-19 Recovery Time"
 author: Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)
 header-includes:
     - \usepackage{setspace}\doublespacing
@@ -16,36 +16,60 @@ fontsize: 11pt
 
 
 # Exploratory Analysis and Data Visualization
-The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time.
+The information of COVID-19 recovery time and other variables (id, gender, race, smoking history, height, weight, body mass index (BMI), history of hypertension and diabetes, systolic blood pressure (SBP), LDL cholesterol (LDL), vaccination status at the time of infection) is collected from two existing cohort studies. Baseline characteristics are presented in Table 1, showing that almost all characteristics are similar between the two study groups, except for COVID-19 recovery time. 
 
 Table 1: Baseline Characteristics
 
-![](./plots/Rplot03.png){width=50%, height=40%}  
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{./plots/Rplot03.png}
+\end{figure}
 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=0.45\textwidth]{./plots/Rplot04.png}
-\hspace{0.5cm} % Adds space between the two figures
-\includegraphics[width=0.45\textwidth]{./plots/Rplot06.png}
-\caption{(a) Histogram of Continuous Variables (b) Bar Plot of Categorical Variables}
+% First Row
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot04.png}
+  \centering
+  (a)
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot06.png}
+  \centering
+  (b)
+\end{minipage}
+
+\vspace{1cm}
+
+% Second Row
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot07.png}
+  \centering
+  (c)
+\end{minipage}
+\hspace{0.5cm}
+\begin{minipage}{0.45\textwidth}
+  \includegraphics[width=0.8\linewidth]{./plots/Rplot08.png}
+  \centering
+  (d)
+\end{minipage}
+
+\caption{(a) Histogram of Continuous Variables (b) Bar Plot of Categorical Variables (c) Corrrelation Plot (d) Relationship Between Weight and BMI}
 \end{figure}
 
+Figure 1(a) shows recovery time is right-skewed, with most recovering quickly but some taking longer. Figure 1(b) highlights imbalances in demographics, with more non-smokers and fewer individuals with diabetes or severe COVID-19. In Figure 1(c), weight and BMI show a positive correlation, so do hypertension and SBP. However, height and BMI are negatively correlated. Figure 1(d) shows that although groups A and B have similar median recovery times, group B has more variability and longer recovery times for some cases.
 
 # Model Training
 
-## Model selection
-
-After cleansing and preprocessing the dataset, we divided it into training and testing subsets using an 80-20 split. Subsequently, we explored a diverse array of regression models to forecast COVID-19 recovery times. These models are Linear Model, Lasso Regression, Elastic Net, Ridge Regression, Partial Least Squares (PLS), Principal Component Regression (PCR),  Generalized Additive Models (GAM), and Multivariate Adaptive Regression Splines (MARS). Utilizing the caret package's train function, each model underwent training on the training dataset, incorporating 10-fold cross-validation to enhance model reliability and performance assessment.
-
-Linear Model (LM) presupposes linearity, homoscedasticity, and absence of multicollinearity. Lasso Regression shares these assumptions. Ridge Regression counters multicollinearity through a penalty term. Elastic Net, a hybrid of Lasso and Ridge penalties, assumes that their combined regularization improves model performance. PCR anticipates that principal components explain most predictor variance and exhibit a linear relationship with the target variable. PLS projects predictors onto new components that linearly correlate with the response. GAM allows for non-linear relationships between predictors and response, enhancing model flexibility. Lastly, MARS employs piecewise linear regressions to accommodate non-linear predictor-outcome relationships, utilizing splines for model construction.
-
 ## Selection of Tuning Parameters
+After cleansing and preprocessing the dataset, we divided it into training and testing subsets using an 80-20 split. Subsequently, we explored a diverse array of regression models to forecast COVID-19 recovery times. These models are Linear Model, Lasso Regression, Elastic Net, Ridge Regression, Partial Least Squares (PLS), Principal Component Regression (PCR), Generalized Additive Models (GAM), and Multivariate Adaptive Regression Splines (MARS). Utilizing the caret package's train function, each model underwent training on the training dataset, incorporating 10-fold cross-validation to enhance model reliability and performance assessment. We used earth package to fit the MARS model.
+In predictive modeling, tuning parameters are crucial as they can significantly affect the model's performance. To select the best tuning parameters, with the MARS model (Figure 2(a)), we started with a relatively large number of maximum terms in the initial grid search to capture potential model complexity. We created a grid of potential models with degrees from 1 to 5 and numbers of terms to prune from 2 to 30. Then, we narrowed down the search space for the degree of interaction and number of terms based on cross-validation performance. The best tuning parameters given by the cross-validation is: `nprune = 7`, `degree = 4`.
 
-In predictive modeling, tuning parameters are crucial as they can significantly affect the model's performance. To select the best tuning parameters, initially, we used a wide range and search pattern, we created a grid of potential models with different degrees and numbers of terms to prune, then used 10-fold cross-validation to select the optimal combination. After identifying promising ranges for the selected parameters where show the best cross-validation performance, we then searched parameter patterns within a narrower range and with more density by decreasing the step within each parameter sequence. For example, with the MARS model (Figure 2(a)), we started with a relatively large number of maximum terms in the initial grid search to capture potential model complexity. We then narrowed down the search space for the degree of interaction and number of terms based on cross-validation performance. The best tuning parameters given by the cross-validation is: `nprune = 7`, `degree = 4`.
 
 ## Model Comparison
 
-After fitting all the models, we used the resamples function to compare their performance based on RMSE. The performance of all models was assessed through 10-fold cross-validation on the training set. Repeated cross-validation was not employed to avoid excessive computational cost. The results of the cross-validation are presented below:
+After fitting all the models, we used the resamples function to compare their performance based on RMSE. The performance of all models was assessed through 10-fold cross-validation on the training set. The results of the cross-validation are presented below:
 
 \begin{figure}[ht]
 \centering
@@ -55,11 +79,13 @@ After fitting all the models, we used the resamples function to compare their pe
 \caption{(a) MARS Model Tunning (b) Model Comparision}
 \end{figure}
 
-Figure 2(b) illustrates the distribution of RMSE values across different predictive models used to estimate the time to recovery from COVID-19. The MARS model has the lowest median Root Mean Square Error (RMSE), suggesting that it is the best performing model in terms of prediction accuracy on the validation sets used during cross-validation. Moreover, there is a clear distinction between the group of models with the lowest RMSE values (MARS, GAM, Elastic Net) and the other models, indicating that incorporating non-linearity and regularization seems beneficial for this dataset.
 
-Conclusively, MARS emerges as the most accurate and consistent model for this dataset. This technique excels in model simplification and construction, utilizing spline functions of predictor variables to estimate complex nonlinear relationships, thereby offering flexibility in modeling the recovery time distribution of the COVID-19 dataset.
-
+Figure 2(b) illustrates the distribution of Root Mean Square Error (RMSE) values across different predictive models used to estimate the time to recovery from COVID-19. The MARS model has the lowest median RMSE (18.05), suggesting that it is the best performing model in terms of prediction accuracy on the validation sets used during cross-validation. Moreover, there is a clear distinction between the group of models with the lowest RMSE values (MARS, GAM) and the other models, indicating that incorporating non-linearity and regularization seems beneficial for this dataset.
 MARS's strength lies in its adaptability, capable of handling both continuous and categorical predictor variables, even in large numbers. Its nonparametric approach, free from predefined assumptions on the distribution of predictor variables, further underscores its utility in complex predictive scenarios. 
+
+## Model Selection
+
+Because MARS employs piecewise linear regressions to accommodate non-linear predictor-outcome relationships, utilizing splines for model construction, and the MARS model has the lowest median RMSE, we choose MARS as our final model.
 
 # Results
 
@@ -122,7 +148,7 @@ In conclusion, our model analysis underscores the necessity of vaccination and t
 
 In our work with the Multivariate Adaptive Regression Splines (MARS) model for predicting COVID-19 recovery times, we chose to include "study" as a predictor. This decision was based on recognizing that factors like socioeconomic status, geography, and demographics can greatly affect recovery outcomes. These factors vary from one study to another but weren't directly included in our datasets. Our analysis showed that the "study" variable significantly interacts with other variables, especially BMI, highlighting that the influence of certain predictors on recovery time can change depending on the study context. This finding underlines the importance of considering the "study" variable to accurately capture the diverse experiences of COVID-19 recovery.
 
-To deepen our understanding of these effects, a stratified analysis is suggested as a future step. Such an analysis would allow us to dissect how recovery dynamics change across distinct study conditions, providing a better understanding of the factors influencing recovery times. By segmenting data according to specific study characteristics, we can tailor our model to more precisely predict the COVID-19 recovery time. 
+To deepen our understanding of these effects, a stratified analysis is suggested as a future step. This analysis would allow us to dissect how recovery dynamics change across distinct study conditions, providing a better understanding of the factors influencing recovery times. By segmenting data according to specific study characteristics, we can tailor our model to more precisely predict the COVID-19 recovery time. 
 
 
 
