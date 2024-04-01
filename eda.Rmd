@@ -2,7 +2,7 @@
 title: "EDA"
 author: "Chen Liang (cl4469), Xinyi Shang (xs2529), Yuki Joyama (yj2803)"
 date: "2024-03-20"
-output: github_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -93,26 +93,7 @@ barplot(table(cate_recov$study), main = "Study", ylab = "Count", col = colors[8]
 
 
 ```
-```{r}
-data_split = initial_split(df_recov, prop = .80)
-train = training(data_split) |>
-select( -id)
-test = testing(data_split) |>
-select( -id)
 
-# Training data
-x = model.matrix(recovery_time~.,train)[, -1]
-y = train$recovery_time
-# Testing data
-x2 <- model.matrix(recovery_time~.,test)[, -1]
-y2 <- test$recovery_time
-
-featurePlot(x = x,  
-            y = y,              
-            plot = "scatter",
-            auto.key = list(columns = 3)) 
-
-```
 ```{r}
 ggplot(data = df_recov, aes(x = study, y = recovery_time, fill = study)) +
   geom_boxplot() +
