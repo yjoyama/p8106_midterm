@@ -2,7 +2,7 @@
 title: "Midterm Project"
 author: "Yuki Joyama"
 date: "2024-03-19"
-output: github_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -277,7 +277,6 @@ plot(mars.fit)
 
 # relative variable importance
 vip(mars.fit$finalModel, type = "nsubsets")
-title("Plot 2: Variance Importance Plot")
 
 # obtain the test error
 mars.pred <- predict(mars.fit, newdata = df_test |> select(!recovery_time))
